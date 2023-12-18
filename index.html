@@ -44,18 +44,29 @@
       enables us to cleanly break all retainers between the iframe and the main
       window when it is removed, which reduces the chances of a memory leak.
     </p>
-    <div>
-      <button id="add-iframe">Add Iframe</button>
-      <button id="remove-iframes">Remove All Iframes</button>
-      <button id="collect-garbage">Collect Garbage</button>
-    </div>
     <hr />
     <div>
-      <div>Note: for best results, please run with flags: E.g.,:</div>
+      <div>
+        Note: in order for the "Collect Garbage" button to work, please run with
+        flags: E.g.,:
+      </div>
       <pre style="white-space: break-spaces">
 "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --js-flags="--expose-gc --enable-precise-memory-info"</pre
       >
-      <div>You will need to quit any existing Edge/Chrome processes first via Task Manager before these flags take effect.</div>
+      <div>
+        You will need to quit any existing Edge/Chrome processes first via Task
+        Manager before these flags take effect.
+      </div>
+    </div>
+    <hr />
+    <div>
+      <label for="scenario">Scenario</label>
+      <select id="scenario">
+        <option value="1-leak-iframe-object">1 - Leak Iframe Object</option>
+      </select>
+      <button id="run-scenario">Add Iframe And Run Scenario</button>
+      <button id="remove-iframes">Remove All Iframes</button>
+      <button id="collect-garbage">Collect Garbage</button>
     </div>
     <hr />
     <div id="iframe-container"></div>
@@ -66,28 +77,16 @@
         >github repo</a
       >):
     </div>
-    <h2>Iframe Code</h2>
-    <pre><code class="language-javascript" id="code-iframe"></code></pre>
     <h2>Main Window Code</h2>
     <pre><code class="language-javascript" id="code"></code></pre>
-    <script src="./index.js"></script>
+    <h2>Iframe Code</h2>
+    <pre><code class="language-javascript" id="code-iframe"></code></pre>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"
       integrity="sha512-bgHRAiTjGrzHzLyKOnpFvaEpGzJet3z4tZnXGjpsCcqOnAH6VGUx9frc5bcIhKTVLEiCO6vEhNAgx5jtLUYrfA=="
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
-    <script>
-      fetch("./index.js")
-        .then((response) => response.text())
-        .then((code) => (document.getElementById("code").textContent = code))
-        .then(() => hljs.highlightAll());
-      fetch("./iframe.js")
-        .then((response) => response.text())
-        .then(
-          (code) => (document.getElementById("code-iframe").textContent = code)
-        )
-        .then(() => hljs.highlightAll());
-    </script>
+    <script src="./index.js"></script>
   </body>
 </html>
