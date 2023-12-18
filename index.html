@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Iframe Proxies Playground</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/a11y-light.min.css"
+      integrity="sha512-WDk6RzwygsN9KecRHAfm9HTN87LQjqdygDmkHSJxVkVI7ErCZ8ZWxP6T8RvBujY1n2/E4Ac+bn2ChXnp5rnnHA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      iframe {
+        width: 320px;
+        height: 100px;
+        background-color: lightgray;
+        border: 2px solid black;
+        box-sizing: border-box;
+      }
+      #iframe-container {
+        height: 110px;
+        background-color: grey;
+        padding: 5px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Iframe Proxies Playground</h1>
+    <p>
+      This project is a proof-of-concept of an idea about how to isolate
+      sourceless/same domain iframes with revokable proxies.
+    </p>
+    <p>
+      Compared with isolated/cross-domain iframes, sourceless iframes offer the
+      ability to synchronously communicate with the main page with objects and
+      functions. This power comes at the cost of increased chances for memory
+      leaks because it enables inside-of-iframe code to become entangled with
+      code outside the iframe.
+    </p>
+    <p>
+      In this project, we are attempting to solve this problem by intercepting
+      communication between iframe code and main window code with proxies. This
+      enables us to cleanly break all retainers between the iframe and the main
+      window when it is removed, which reduces the chances of a memory leak.
+    </p>
+    <div>
+      <button id="add-iframe">Add Iframe</button>
+      <button id="remove-iframes">Remove All Iframes</button>
+    </div>
+    <hr />
+    <div id="iframe-container"></div>
+    <hr />
+    <div>
+      We are running the following JavaScript code on this page (see
+      <a href="https://github.com/astegmaier/playground-hung-iframe-promise"
+        >github repo</a
+      >):
+    </div>
+    <h2>Iframe Code</h2>
+    <pre><code class="language-javascript" id="code-iframe"></code></pre>
+    <h2>Main Window Code</h2>
+    <pre><code class="language-javascript" id="code"></code></pre>
+    <script src="./index.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"
+      integrity="sha512-bgHRAiTjGrzHzLyKOnpFvaEpGzJet3z4tZnXGjpsCcqOnAH6VGUx9frc5bcIhKTVLEiCO6vEhNAgx5jtLUYrfA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+      fetch("./index.js")
+        .then((response) => response.text())
+        .then((code) => (document.getElementById("code").textContent = code))
+        .then(() => hljs.highlightAll());
+      fetch("./iframe.js")
+        .then((response) => response.text())
+        .then(
+          (code) => (document.getElementById("code-iframe").textContent = code)
+        )
+        .then(() => hljs.highlightAll());
+    </script>
+  </body>
+</html>
