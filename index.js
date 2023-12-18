@@ -1,27 +1,24 @@
-window.leakyThingRetainerSet = new Set();
-
-class LeakyThing {}
+window.iframeObjectRetainers = new Set();
 
 document.getElementById("add-iframe").onclick = async () => {
-  const iframe = await getIframe();
-
-  console.log(`Adding a LeakyThing to leakyThingRetainerArray.`);
-  const leakyThing = new LeakyThing();
-  leakyThingRetainerSet.add(leakyThing);
-
-  // If the iframe is removed before iframe.contentWindow.wait() completes, execution of this function will stop.
-  // No error is thrown by iframe.contentWindow.wait(), and the leakyThing will not be cleaned up.
-  try {
-    await iframe.contentWindow.wait(3000);
-  } catch (error) {
-    console.log("Caught this error from iframe promise:", error.message);
-  }
-
-  leakyThingRetainerSet.delete(leakyThing);
-  console.log(
-    `Cleaned up a LeakyThing. ${window.leakyThingRetainerSet.size} LeakyThings remain.`
-  );
+  const iframe = await getTrackedIframe();
+  window.iframeObjectRetainers.add(iframe.contentWindow.getIframeObject());
 };
+
+let iframeCount = 0;
+async function getTrackedIframe() {
+  const iframe = await getIframe();
+  iframeCount += 1;
+  console.log(`Creating iframe ${iframeCount}.`);
+  iframe.DEBUG_ID = iframeCount;
+  iframe.contentWindow.DEBUG_ID = iframeCount;
+  window.finalizationRegistry.register(
+    iframe.contentWindow,
+    `iframe.contentWindow ${iframeCount}`
+  );
+  window.finalizationRegistry.register(iframe, `iframe ${iframeCount}`);
+  return iframe;
+}
 
 function getIframe() {
   return new Promise((resolve) => {
@@ -44,7 +41,20 @@ function getIframe() {
 
 document.getElementById("remove-iframes").onclick = () => {
   document.getElementById("iframe-container").textContent = "";
-  console.log(
-    `Iframe removed. We have leaked ${window.leakyThingRetainerSet.size} LeakyThings right now.`
-  );
+  console.log("All iframes removed.");
 };
+
+document.getElementById("collect-garbage").onclick = async () => {
+  if (window.gc) {
+    await window.gc?.({ execution: "async" });
+    console.log("Garbage collection finished.");
+  } else {
+    console.log(
+      "Unable to trigger garbage collection - please run with --expose-gc flag."
+    );
+  }
+};
+
+window.finalizationRegistry = new FinalizationRegistry((objectType) => {
+  console.log(`Cleaned up ${objectType}`);
+});

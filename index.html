@@ -47,6 +47,15 @@
     <div>
       <button id="add-iframe">Add Iframe</button>
       <button id="remove-iframes">Remove All Iframes</button>
+      <button id="collect-garbage">Collect Garbage</button>
+    </div>
+    <hr />
+    <div>
+      <div>Note: for best results, please run with flags: E.g.,:</div>
+      <pre style="white-space: break-spaces">
+"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --js-flags="--expose-gc --enable-precise-memory-info"</pre
+      >
+      <div>You will need to quit any existing Edge/Chrome processes first via Task Manager before these flags take effect.</div>
     </div>
     <hr />
     <div id="iframe-container"></div>
