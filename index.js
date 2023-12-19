@@ -28,18 +28,18 @@ function updateScenario() {
 }
 updateScenario();
 
-let iframeCount = 0;
+let runCount = 0;
 
 async function getTrackedIframe(scriptUrl) {
-  iframeCount += 1;
-  const iframeContainer = getIframeContainer(iframeCount);
+  runCount += 1;
+  const iframeContainer = getIframeContainer(runCount);
   const iframe = await getIframe(scriptUrl, iframeContainer);
-  console.log(`Creating iframe ${iframeCount}.`);
+  console.log(`Creating iframe ${runCount}.`);
   window.finalizationRegistry.register(
     iframe.contentWindow,
-    `iframe.contentWindow ${iframeCount}`
+    `iframe.contentWindow ${runCount}`
   );
-  window.finalizationRegistry.register(iframe, `iframe ${iframeCount}`);
+  window.finalizationRegistry.register(iframe, `iframe ${runCount}`);
   return iframe;
 }
 
@@ -62,11 +62,11 @@ function getIframe(scriptUrl, container) {
   });
 }
 
-function getIframeContainer(scenarioNumber) {
+function getIframeContainer(runNumber) {
   iframeStatus = document.createElement("div");
-  iframeStatus.id = `status-iframe-${scenarioNumber}`;
+  iframeStatus.id = `status-iframe-${runNumber}`;
   iframeWindowStatus = document.createElement("div");
-  iframeWindowStatus.id = `status-iframe-window-${scenarioNumber}`;
+  iframeWindowStatus.id = `status-iframe-window-${runNumber}`;
 
   const statusContainer = document.createElement("div");
   statusContainer.className = "status-container";
@@ -74,45 +74,45 @@ function getIframeContainer(scenarioNumber) {
   statusContainer.appendChild(iframeWindowStatus);
 
   const iframeContainer = document.createElement("div");
-  iframeContainer.id = `iframe-container-${scenarioNumber}`;
+  iframeContainer.id = `iframe-container-${runNumber}`;
   iframeContainer.className = "iframe-container";
 
-  const scenarioDiv = document.createElement("div");
-  scenarioDiv.id = `scenario-${scenarioNumber}`;
-  scenarioDiv.className = "scenario-container";
-  scenarioDiv.appendChild(iframeContainer);
-  scenarioDiv.appendChild(statusContainer);
+  const runContainer = document.createElement("div");
+  runContainer.className = "run-container";
+  runContainer.appendChild(iframeContainer);
+  runContainer.appendChild(statusContainer);
 
-  document.getElementById("all-scenarios-container").appendChild(scenarioDiv);
-  updateScenarioStatus(scenarioNumber);
+  document.getElementById("all-runs-container").appendChild(runContainer);
+  updateRunStatus(runNumber);
   return iframeContainer;
 }
 
-function updateScenarioStatus(
-  scenarioNumber,
+function updateRunStatus(
+  runNumber,
   iframeStatus = "Attached",
   iframeWindowStatus = "Attached"
 ) {
   document.getElementById(
-    `status-iframe-${scenarioNumber}`
+    `status-iframe-${runNumber}`
   ).textContent = `Iframe: ${iframeStatus}`;
   document.getElementById(
-    `status-iframe-window-${scenarioNumber}`
+    `status-iframe-window-${runNumber}`
   ).textContent = `Iframe Window: ${iframeWindowStatus}`;
 }
 
 document.getElementById("remove-iframes").onclick = () => {
-  for (let i = 1; i <= iframeCount; i++) {
+  for (let i = 1; i <= runCount; i++) {
     const iframeContainer = document.getElementById(`iframe-container-${i}`);
     iframeContainer.textContent = "";
   }
   console.log("All iframes removed.");
 };
 
-document.getElementById("reset-scenarios").onclick = () => {
-  scenarioNumber = 0;
-  document.getElementById("all-scenarios-container").textContent = "";
-  console.clear();
+document.getElementById("reset-scenario").onclick = () => {
+  runCount = 0;
+  document.getElementById("all-runs-container").textContent = "";
+  initializeFinalizationRegistry();
+  console.log("Scenario reset.");
 };
 
 document.getElementById("collect-garbage").onclick = async () => {
@@ -126,6 +126,9 @@ document.getElementById("collect-garbage").onclick = async () => {
   }
 };
 
-window.finalizationRegistry = new FinalizationRegistry((objectType) => {
-  console.log(`Cleaned up ${objectType}`);
-});
+function initializeFinalizationRegistry() {
+  window.finalizationRegistry = new FinalizationRegistry((objectType) => {
+    console.log(`Cleaned up ${objectType}`);
+  });
+}
+initializeFinalizationRegistry();
