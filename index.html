@@ -41,7 +41,11 @@
     <h1>Iframe Proxies Playground</h1>
     <p>
       This project is a proof-of-concept of an idea about how to isolate
-      sourceless/same domain iframes with revokable proxies.
+      sourceless/same-domain iframes with
+      <a
+        href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/revocable"
+        >revokable proxies</a
+      >.
     </p>
     <p>
       Compared with isolated/cross-domain iframes, sourceless iframes offer the
@@ -56,6 +60,9 @@
       enables us to cleanly break all retainers between the iframe and the main
       window when it is removed, which reduces the chances of a memory leak.
     </p>
+    <p>To view the full code running on this page, see <a href="https://github.com/astegmaier/playground-hung-iframe-promise"
+        >this github repo</a
+      ></p>
     <hr />
     <div>
       <div>
@@ -71,6 +78,8 @@
       </div>
     </div>
     <hr />
+    <div id="iframe-container"></div>
+    <hr />
     <div>
       <label for="scenario">Scenario</label>
       <select id="scenario">
@@ -79,15 +88,6 @@
       <button id="run-scenario">Add Iframe And Run Scenario</button>
       <button id="remove-iframes">Remove All Iframes</button>
       <button id="collect-garbage">Collect Garbage</button>
-    </div>
-    <hr />
-    <div id="iframe-container"></div>
-    <hr />
-    <div>
-      We are running the following JavaScript code on this page (see
-      <a href="https://github.com/astegmaier/playground-hung-iframe-promise"
-        >github repo</a
-      >):
     </div>
     <div id="scenario-description"></div>
     <h2>Main Window Code</h2>

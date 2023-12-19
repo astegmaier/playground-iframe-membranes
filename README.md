@@ -1,6 +1,6 @@
 # Iframe Proxies Playground</h1>
 
-This project is a proof-of-concept of an idea about how to isolate sourceless/same domain iframes with revokable proxies.
+This project is a proof-of-concept of an idea about how to isolate sourceless/same-domain iframes with [revokable proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/revocable).
 
 Compared with isolated/cross-domain iframes, sourceless iframes offer the ability to synchronously communicate with the main page with objects and functions. This power comes at the cost of increased chances for memory leaks because it enables inside-of-iframe code to become entangled with code outside the iframe.
 
