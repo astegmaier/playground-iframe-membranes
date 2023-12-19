@@ -1,6 +1,6 @@
 document.getElementById("run-scenario").onclick = async () => {
   const scenarioModule = await import(`./${currentScenario}/index.js`);
-  const iframe = await getTrackedIframe(currentScenario);
+  const iframe = await getTrackedIframe(`./${currentScenario}/iframe.js`);
   await scenarioModule.runScenario(iframe);
 };
 
@@ -30,8 +30,8 @@ updateScenario();
 
 let iframeCount = 0;
 
-async function getTrackedIframe(scenarioFolder) {
-  const iframe = await getIframe(scenarioFolder);
+async function getTrackedIframe(scriptUrl) {
+  const iframe = await getIframe(scriptUrl);
   iframeCount += 1;
   console.log(`Creating iframe ${iframeCount}.`);
   iframe.DEBUG_ID = iframeCount;
@@ -44,7 +44,7 @@ async function getTrackedIframe(scenarioFolder) {
   return iframe;
 }
 
-function getIframe(scenarioFolder) {
+function getIframe(scriptUrl) {
   return new Promise((resolve) => {
     const iframe = document.createElement("iframe");
     iframe.onload = () => resolve(iframe);
@@ -52,7 +52,7 @@ function getIframe(scenarioFolder) {
       <!DOCTYPE html>
       <html>
       <head>
-        <script type="text/javascript" src="./${scenarioFolder}/iframe.js"></script>
+        <script type="text/javascript" src="${scriptUrl}"></script>
       </head>
       <body>
         <h1>Hi, I am an iframe.</h1>
