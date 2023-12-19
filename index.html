@@ -30,10 +30,11 @@
         box-sizing: border-box;
       }
       #all-runs-container {
-        height: 110px;
+        height: 160px;
         background-color: grey;
         padding: 5px;
         overflow-y: auto;
+        display: flex;
       }
     </style>
   </head>
@@ -60,9 +61,12 @@
       enables us to cleanly break all retainers between the iframe and the main
       window when it is removed, which reduces the chances of a memory leak.
     </p>
-    <p>To view the full code running on this page, see <a href="https://github.com/astegmaier/playground-hung-iframe-promise"
+    <p>
+      To view the full code running on this page, see
+      <a href="https://github.com/astegmaier/playground-hung-iframe-promise"
         >this github repo</a
-      >.</p>
+      >.
+    </p>
     <hr />
     <div>
       <div>

@@ -32,14 +32,19 @@ let runCount = 0;
 
 async function getTrackedIframe(scriptUrl) {
   runCount += 1;
-  const iframeContainer = getIframeContainer(runCount);
+  const runNumber = runCount;
+  const iframeContainer = getIframeContainer(runNumber);
   const iframe = await getIframe(scriptUrl, iframeContainer);
-  console.log(`Creating iframe ${runCount}.`);
+  updateRunStatus(runNumber, "Attached", "Attached");
+  console.log(`Creating iframe ${runNumber}.`);
+  window.finalizationRegistry.register(
+    iframe,
+    JSON.stringify({ runNumber, kind: "iframe" })
+  );
   window.finalizationRegistry.register(
     iframe.contentWindow,
-    `iframe.contentWindow ${runCount}`
+    JSON.stringify({ runNumber, kind: "iframe-window" })
   );
-  window.finalizationRegistry.register(iframe, `iframe ${runCount}`);
   return iframe;
 }
 
@@ -63,13 +68,16 @@ function getIframe(scriptUrl, container) {
 }
 
 function getIframeContainer(runNumber) {
-  iframeStatus = document.createElement("div");
+  const runNumberLabel = document.createElement("div");
+  runNumberLabel.textContent = `Run ${runNumber}`;
+  const iframeStatus = document.createElement("div");
   iframeStatus.id = `status-iframe-${runNumber}`;
-  iframeWindowStatus = document.createElement("div");
+  const iframeWindowStatus = document.createElement("div");
   iframeWindowStatus.id = `status-iframe-window-${runNumber}`;
 
   const statusContainer = document.createElement("div");
   statusContainer.className = "status-container";
+  statusContainer.appendChild(runNumberLabel);
   statusContainer.appendChild(iframeStatus);
   statusContainer.appendChild(iframeWindowStatus);
 
@@ -79,31 +87,31 @@ function getIframeContainer(runNumber) {
 
   const runContainer = document.createElement("div");
   runContainer.className = "run-container";
-  runContainer.appendChild(iframeContainer);
   runContainer.appendChild(statusContainer);
-
+  runContainer.appendChild(iframeContainer);
   document.getElementById("all-runs-container").appendChild(runContainer);
-  updateRunStatus(runNumber);
+
   return iframeContainer;
 }
 
-function updateRunStatus(
-  runNumber,
-  iframeStatus = "Attached",
-  iframeWindowStatus = "Attached"
-) {
-  document.getElementById(
-    `status-iframe-${runNumber}`
-  ).textContent = `Iframe: ${iframeStatus}`;
-  document.getElementById(
-    `status-iframe-window-${runNumber}`
-  ).textContent = `Iframe Window: ${iframeWindowStatus}`;
+function updateRunStatus(runNumber, iframeStatus, iframeWindowStatus) {
+  if (iframeStatus) {
+    document.getElementById(
+      `status-iframe-${runNumber}`
+    ).textContent = `Iframe: ${iframeStatus}`;
+  }
+  if (iframeWindowStatus) {
+    document.getElementById(
+      `status-iframe-window-${runNumber}`
+    ).textContent = `Iframe Window: ${iframeWindowStatus}`;
+  }
 }
 
 document.getElementById("remove-iframes").onclick = () => {
   for (let i = 1; i <= runCount; i++) {
     const iframeContainer = document.getElementById(`iframe-container-${i}`);
     iframeContainer.textContent = "";
+    updateRunStatus(i, "Removed but not GCd", "Removed but not GCd");
   }
   console.log("All iframes removed.");
 };
@@ -127,8 +135,18 @@ document.getElementById("collect-garbage").onclick = async () => {
 };
 
 function initializeFinalizationRegistry() {
-  window.finalizationRegistry = new FinalizationRegistry((objectType) => {
-    console.log(`Cleaned up ${objectType}`);
+  window.finalizationRegistry = new FinalizationRegistry((objectInfo) => {
+    try {
+      const { runNumber, kind } = JSON.parse(objectInfo);
+      updateRunStatus(
+        runNumber,
+        kind === "iframe" ? "GCd" : undefined,
+        kind === "iframe-window" ? "GCd" : undefined
+      );
+      console.log(`Cleaned up ${kind} ${runNumber}.`);
+    } catch (e) {
+      console.error("finalizationRegistry error handler error:", e);
+    }
   });
 }
 initializeFinalizationRegistry();
