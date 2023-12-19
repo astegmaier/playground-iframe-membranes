@@ -1,15 +1,14 @@
 document.getElementById("run-scenario").onclick = async () => {
-  const scenarioFolder = "1-leak-iframe-object";
-  const module = await import(`./${scenarioFolder}/index.js`);
-  const iframe = await getTrackedIframe(scenarioFolder);
-  await module.runScenario(iframe);
+  const scenarioModule = await import(`./${currentScenario}/index.js`);
+  const iframe = await getTrackedIframe(currentScenario);
+  await scenarioModule.runScenario(iframe);
 };
 
 const scenarioDropdown = document.getElementById("scenario");
-scenarioDropdown.onchange = updateScenario
-let currentScenario
+scenarioDropdown.onchange = updateScenario;
+let currentScenario;
 function updateScenario() {
-  let currentScenario = scenarioDropdown.value;
+  currentScenario = scenarioDropdown.value;
   fetch(`./${currentScenario}/index.js`)
     .then((response) => response.text())
     .then((code) => (document.getElementById("code").textContent = code))
@@ -18,6 +17,14 @@ function updateScenario() {
     .then((response) => response.text())
     .then((code) => (document.getElementById("code-iframe").textContent = code))
     .then(() => hljs.highlightAll());
+  fetch(`/${currentScenario}/description.md`)
+    .then((response) => response.blob())
+    .then((blob) => blob.text())
+    .then(
+      (markdown) =>
+        (document.getElementById("scenario-description").innerHTML =
+          marked.parse(markdown))
+    );
 }
 updateScenario();
 
