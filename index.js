@@ -17,14 +17,10 @@ function updateScenario() {
     .then((response) => response.text())
     .then((code) => (document.getElementById("code-iframe").textContent = code))
     .then(() => hljs.highlightAll());
-  fetch(`/${currentScenario}/description.md`)
+  fetch(`/${currentScenario}/_description.md`)
     .then((response) => response.blob())
     .then((blob) => blob.text())
-    .then(
-      (markdown) =>
-        (document.getElementById("scenario-description").innerHTML =
-          marked.parse(markdown))
-    );
+    .then((markdown) => (document.getElementById("scenario-description").innerHTML = marked.parse(markdown)));
 }
 updateScenario();
 
@@ -37,14 +33,8 @@ async function getTrackedIframe(scriptUrl) {
   const iframe = await getIframe(scriptUrl, iframeContainer);
   updateRunStatus(runNumber, "Attached", "Attached");
   console.log(`Creating iframe ${runNumber}.`);
-  window.finalizationRegistry.register(
-    iframe,
-    JSON.stringify({ runNumber, kind: "iframe" })
-  );
-  window.finalizationRegistry.register(
-    iframe.contentWindow,
-    JSON.stringify({ runNumber, kind: "iframe-window" })
-  );
+  window.finalizationRegistry.register(iframe, JSON.stringify({ runNumber, kind: "iframe" }));
+  window.finalizationRegistry.register(iframe.contentWindow, JSON.stringify({ runNumber, kind: "iframe-window" }));
   return iframe;
 }
 
@@ -96,14 +86,10 @@ function getIframeContainer(runNumber) {
 
 function updateRunStatus(runNumber, iframeStatus, iframeWindowStatus) {
   if (iframeStatus) {
-    document.getElementById(
-      `status-iframe-${runNumber}`
-    ).textContent = `Iframe: ${iframeStatus}`;
+    document.getElementById(`status-iframe-${runNumber}`).textContent = `Iframe: ${iframeStatus}`;
   }
   if (iframeWindowStatus) {
-    document.getElementById(
-      `status-iframe-window-${runNumber}`
-    ).textContent = `Iframe Window: ${iframeWindowStatus}`;
+    document.getElementById(`status-iframe-window-${runNumber}`).textContent = `Iframe Window: ${iframeWindowStatus}`;
   }
 }
 
@@ -128,9 +114,7 @@ document.getElementById("collect-garbage").onclick = async () => {
     await window.gc?.({ execution: "async" });
     console.log("Garbage collection finished.");
   } else {
-    console.log(
-      "Unable to trigger garbage collection - please run with --expose-gc flag."
-    );
+    console.log("Unable to trigger garbage collection - please run with --expose-gc flag.");
   }
 };
 
@@ -138,11 +122,7 @@ function initializeFinalizationRegistry() {
   window.finalizationRegistry = new FinalizationRegistry((objectInfo) => {
     try {
       const { runNumber, kind } = JSON.parse(objectInfo);
-      updateRunStatus(
-        runNumber,
-        kind === "iframe" ? "GCd" : undefined,
-        kind === "iframe-window" ? "GCd" : undefined
-      );
+      updateRunStatus(runNumber, kind === "iframe" ? "GCd" : undefined, kind === "iframe-window" ? "GCd" : undefined);
       console.log(`Cleaned up ${kind} ${runNumber}.`);
     } catch (e) {
       console.error("finalizationRegistry error handler error:", e);
