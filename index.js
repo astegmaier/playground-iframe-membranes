@@ -9,15 +9,15 @@ scenarioDropdown.onchange = updateScenario;
 let currentScenario;
 function updateScenario() {
   currentScenario = scenarioDropdown.value;
-  fetch(`./${currentScenario}/index.js`)
+  fetch(`./_includes/${currentScenario}/index.js`)
     .then((response) => response.text())
     .then((code) => (document.getElementById("code").textContent = code))
     .then(() => hljs.highlightAll());
-  fetch(`./${currentScenario}/iframe.js`)
+  fetch(`./_includes/${currentScenario}/iframe.js`)
     .then((response) => response.text())
     .then((code) => (document.getElementById("code-iframe").textContent = code))
     .then(() => hljs.highlightAll());
-  fetch(`/${currentScenario}/_description.md`)
+  fetch(`./_includes/${currentScenario}/description.md`)
     .then((response) => response.blob())
     .then((blob) => blob.text())
     .then((markdown) => (document.getElementById("scenario-description").innerHTML = marked.parse(markdown)));
