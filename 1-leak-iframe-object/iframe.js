@@ -1,5 +1,3 @@
 window.getIframeObject = () => {
-  return { source: 'iframe' };
-}
-
-window.bigObject = Array(1000000).fill(0).map(() => Math.random());
+  return { source: "iframe" };
+};
