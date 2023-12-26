@@ -1,5 +1,6 @@
-window.iframeObjectRetainers = new Set();
+window.leakedIframeRetainers = new Set();
 
 export const runScenario = (iframe) => {
-    window.iframeObjectRetainers.add(iframe.contentWindow.getIframeObject());
-}
+  const iframeObject = iframe.contentWindow.getIframeObject();
+  window.leakedIframeRetainers.add(iframeObject);
+};
