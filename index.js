@@ -96,8 +96,10 @@ function updateRunStatus(runNumber, iframeStatus, iframeWindowStatus) {
 document.getElementById("remove-iframes").onclick = () => {
   for (let i = 1; i <= runCount; i++) {
     const iframeContainer = document.getElementById(`iframe-container-${i}`);
-    iframeContainer.textContent = "";
-    updateRunStatus(i, "Removed but not GCd", "Removed but not GCd");
+    if (iframeContainer.hasChildNodes()) {
+      iframeContainer.textContent = "";
+      updateRunStatus(i, "Removed but not GCd", "Removed but not GCd");
+    }
   }
   console.log("All iframes removed.");
 };
