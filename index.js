@@ -1,36 +1,21 @@
 import { getTrackedIframe } from "./helpers/getTrackedIframe.js";
-import { updateRunStatus } from "./helpers/updateRunStatus.js";
 import { initializeFinalizationRegistry } from "./helpers/initializeFinalizationRegistry.js";
+import { updateRunStatus } from "./helpers/updateRunStatus.js";
+import { updateScenarioDescription } from "./helpers/updateScenarioDescription.js";
+
+let runCount = 0;
+
+const scenarioDropdown = document.getElementById("scenario");
+scenarioDropdown.onchange = (e) => updateScenarioDescription(e.currentTarget.value);
+updateScenarioDescription(scenarioDropdown.value);
 
 initializeFinalizationRegistry();
 
 document.getElementById("run-scenario").onclick = async () => {
-  const scenarioModule = await import(`./${currentScenario}/index.js`);
-  const iframe = await getTrackedIframe(`./${currentScenario}/iframe.js`, ++runCount);
+  const scenarioModule = await import(`./${scenarioDropdown.value}/index.js`);
+  const iframe = await getTrackedIframe(`./${scenarioDropdown.value}/iframe.js`, ++runCount);
   await scenarioModule.runScenario(iframe);
 };
-
-const scenarioDropdown = document.getElementById("scenario");
-scenarioDropdown.onchange = updateScenario;
-let currentScenario;
-function updateScenario() {
-  currentScenario = scenarioDropdown.value;
-  fetch(`./${currentScenario}/index.js`)
-    .then((response) => response.text())
-    .then((code) => (document.getElementById("code").textContent = code))
-    .then(() => hljs.highlightAll());
-  fetch(`./${currentScenario}/iframe.js`)
-    .then((response) => response.text())
-    .then((code) => (document.getElementById("code-iframe").textContent = code))
-    .then(() => hljs.highlightAll());
-  fetch(`./${currentScenario}/index.md`)
-    .then((response) => response.blob())
-    .then((blob) => blob.text())
-    .then((markdown) => (document.getElementById("scenario-description").innerHTML = marked.parse(markdown)));
-}
-updateScenario();
-
-let runCount = 0;
 
 document.getElementById("remove-iframes").onclick = () => {
   for (let i = 1; i <= runCount; i++) {
