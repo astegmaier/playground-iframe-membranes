@@ -23,7 +23,7 @@ function tryGetScenarioFromQuery() {
 scenarioDropdown.value = tryGetScenarioFromQuery();
 updateScenarioDescription(scenarioDropdown.value);
 
-// Changes to the dropdown should be reflected in the url and the app UI (and vice versa.)
+// Changes to the dropdown should be reflected in the url and the app UI (and vice versa).
 scenarioDropdown.addEventListener("change", (e) => {
   const scenarioId = /** @type {HTMLSelectElement} */ (e.currentTarget).value;
   const url = new URL(window.location.href);
