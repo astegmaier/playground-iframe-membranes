@@ -24,7 +24,6 @@ export function updateScenarioDescription(scenarioId) {
       hljs.highlightElement(iframeCodeContainer);
     });
   fetch(`./${scenarioId}/index.md`)
-    .then((response) => response.blob())
-    .then((blob) => blob.text())
+    .then((response) => response.text())
     .then((markdown) => (document.getElementById("scenario-description").innerHTML = md.render(markdown)));
 }
