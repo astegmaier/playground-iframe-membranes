@@ -4,10 +4,10 @@ const md = markdownit();
 
 /**
  * Updates the UI in the app that describes the scenario and displays the code that will run inside the iframe and the main page.
- * @param {string} scenarioId
+ * @param {string} scenarioId String identifying the scenario. These should correspond to folders inside the "scenarios" folder.
  */
 export function updateScenarioDescription(scenarioId) {
-  fetch(`./${scenarioId}/index.js`)
+  fetch(`./scenarios/${scenarioId}/index.js`)
     .then((response) => response.text())
     .then((code) => {
       const codeContainer = document.getElementById("code");
@@ -15,7 +15,7 @@ export function updateScenarioDescription(scenarioId) {
       delete codeContainer.dataset.highlighted;
       hljs.highlightElement(codeContainer);
     });
-  fetch(`./${scenarioId}/iframe.js`)
+  fetch(`./scenarios/${scenarioId}/iframe.js`)
     .then((response) => response.text())
     .then((code) => {
       const iframeCodeContainer = document.getElementById("code-iframe");
@@ -23,7 +23,7 @@ export function updateScenarioDescription(scenarioId) {
       delete iframeCodeContainer.dataset.highlighted;
       hljs.highlightElement(iframeCodeContainer);
     });
-  fetch(`./${scenarioId}/index.md`)
+  fetch(`./scenarios/${scenarioId}/index.md`)
     .then((response) => response.text())
     .then((markdown) => (document.getElementById("scenario-description").innerHTML = md.render(markdown)));
 }

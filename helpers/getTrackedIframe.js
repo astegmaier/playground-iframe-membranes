@@ -1,15 +1,28 @@
 import { updateRunStatus } from "./updateRunStatus.js";
 
-export async function getTrackedIframe(scriptUrl, runNumber) {
+/**
+ * Creates a new iframe inside a container that displays GC status, and tracks the iframe and iframe.contentWindow using a FinalizationRegistry.
+ * @param {string} scriptUrl Path to the script to load inside the iframe.
+ * @param {number} runNumber A number that distinguishes this "run" from others (scenarios can be run more than once).
+ * @param {IframeFinalizationRegistry} finalizationRegistry The registry used to track garbage collection status.
+ * @returns {Promise<HTMLIFrameElement>}
+ */
+export async function getTrackedIframe(scriptUrl, runNumber, finalizationRegistry) {
   const iframeContainer = getIframeContainer(runNumber);
   const iframe = await getIframe(scriptUrl, iframeContainer);
   updateRunStatus(runNumber, "Attached", "Attached");
   console.log(`Creating iframe ${runNumber}.`);
-  window.finalizationRegistry.register(iframe, JSON.stringify({ runNumber, kind: "iframe" }));
-  window.finalizationRegistry.register(iframe.contentWindow, JSON.stringify({ runNumber, kind: "iframe-window" }));
+  finalizationRegistry.register(iframe, { runNumber, kind: "iframe" });
+  finalizationRegistry.register(iframe.contentWindow, { runNumber, kind: "iframe-window" });
   return iframe;
 }
 
+/**
+ * Creates an iframe and returns it when it is loaded.
+ * @param {string} scriptUrl Url of the script to run inside the iframe.
+ * @param {HTMLDivElement} container Container to append the iframe to.
+ * @returns {Promise<HTMLIFrameElement>}
+ */
 function getIframe(scriptUrl, container) {
   return new Promise((resolve) => {
     const iframe = document.createElement("iframe");
@@ -29,6 +42,11 @@ function getIframe(scriptUrl, container) {
   });
 }
 
+/**
+ * Creates a container to render an iframe and show details about it.
+ * @param {number} runNumber A number that distinguishes this "run" from others (scenarios can be run more than once).
+ * @returns {HTMLDivElement} The container that the iframe can render it.
+ */
 function getIframeContainer(runNumber) {
   const runNumberLabel = document.createElement("div");
   runNumberLabel.textContent = `Run ${runNumber}`;
@@ -51,7 +69,7 @@ function getIframeContainer(runNumber) {
   runContainer.className = "run-container";
   runContainer.appendChild(statusContainer);
   runContainer.appendChild(iframeContainer);
-  document.getElementById("all-runs-container").appendChild(runContainer);
+  document.getElementById("all-runs-container")?.appendChild(runContainer);
 
   return iframeContainer;
 }

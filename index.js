@@ -3,10 +3,16 @@ import { initializeFinalizationRegistry } from "./helpers/initializeFinalization
 import { updateRunStatus } from "./helpers/updateRunStatus.js";
 import { updateScenarioDescription } from "./helpers/updateScenarioDescription.js";
 
+//////////////////////
+// Initialize State //
+//////////////////////
+
 let runCount = 0;
+// We have to store the finalizationRegistry as a global so it doesn't get GC'd unless we want it to.
+window.finalizationRegistry = initializeFinalizationRegistry();
 
 // The scenarioDropdown is the "source of truth" for our app's state.
-const scenarioDropdown = document.getElementById("scenario");
+const scenarioDropdown = /** @type {HTMLSelectElement} */ (document.getElementById("scenario"));
 const validScenarios = new Set(Array.from(scenarioDropdown.options).map((option) => option.value));
 
 // Set the initial scenario from the url, if possible.
@@ -18,24 +24,26 @@ scenarioDropdown.value = tryGetScenarioFromQuery();
 updateScenarioDescription(scenarioDropdown.value);
 
 // Changes to the dropdown should be reflected in the url and the app UI (and vice versa.)
-scenarioDropdown.onchange = (e) => {
-  const scenarioId = e.currentTarget.value;
+scenarioDropdown.addEventListener("change", (e) => {
+  const scenarioId = /** @type {HTMLSelectElement} */ (e.currentTarget).value;
   const url = new URL(window.location.href);
   url.searchParams.set("scenario", scenarioId);
   history.pushState({}, "", url);
   updateScenarioDescription(scenarioId);
-};
+});
 
-window.addEventListener("popstate", (e) => {
+window.addEventListener("popstate", () => {
   scenarioDropdown.value = tryGetScenarioFromQuery();
   updateScenarioDescription(scenarioDropdown.value);
 });
 
-initializeFinalizationRegistry();
+///////////////////////////
+// Set up Click Handlers //
+///////////////////////////
 
 document.getElementById("run-scenario").onclick = async () => {
-  const scenarioModule = await import(`./${scenarioDropdown.value}/index.js`);
-  const iframe = await getTrackedIframe(`./${scenarioDropdown.value}/iframe.js`, ++runCount);
+  const scenarioModule = await import(`./scenarios/${scenarioDropdown.value}/index.js`);
+  const iframe = await getTrackedIframe(`./${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
   await scenarioModule.runScenario(iframe);
 };
 
@@ -53,7 +61,7 @@ document.getElementById("remove-iframes").onclick = () => {
 document.getElementById("reset-scenario").onclick = () => {
   runCount = 0;
   document.getElementById("all-runs-container").textContent = "";
-  initializeFinalizationRegistry();
+  window.finalizationRegistry = initializeFinalizationRegistry();
   console.log("Scenario reset.");
 };
 
