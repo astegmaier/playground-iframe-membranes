@@ -43,7 +43,7 @@ window.addEventListener("popstate", () => {
 
 document.getElementById("run-scenario").onclick = async () => {
   const scenarioModule = await import(`./scenarios/${scenarioDropdown.value}/index.js`);
-  const iframe = await getTrackedIframe(`./${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
+  const iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
   await scenarioModule.runScenario(iframe);
 };
 
