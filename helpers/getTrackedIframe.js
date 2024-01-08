@@ -34,7 +34,7 @@ function getIframe(scriptUrl, container) {
           <script type="text/javascript" src="${scriptUrl}"></script>
         </head>
         <body>
-          <h1>Hi, I am an iframe.</h1>
+          <h3>Hi, I am an iframe.</h3>
         </body>
         </html>
       `;
