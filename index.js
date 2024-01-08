@@ -65,11 +65,14 @@ document.getElementById("reset-scenario").onclick = () => {
   console.log("Scenario reset.");
 };
 
+const gcFlagsModal = new bootstrap.Modal(document.getElementById("gc-flags-modal"));
+
 document.getElementById("collect-garbage").onclick = async () => {
   if (window.gc) {
     await window.gc?.({ execution: "async" });
     console.log("Garbage collection finished.");
   } else {
-    console.log("Unable to trigger garbage collection - please run with --expose-gc flag.");
+    gcFlagsModal.show();
+    console.warn("Unable to trigger garbage collection - please run with --expose-gc flag.");
   }
 };
