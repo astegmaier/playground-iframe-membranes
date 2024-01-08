@@ -51,15 +51,12 @@ fetch(`./solution.js`)
 // Display javascript heap size, if possible.
 function updateUsedJsHeapSize() {
   try {
-    document.getElementById("gc-flags-info-button").hidden = true;
     const heapSize = (performance.memory.usedJSHeapSize / Math.pow(1000, 2)).toFixed(4);
     document.getElementById("heap-size-display").textContent = heapSize;
   } catch (e) {
-    document.getElementById("gc-flags-info-button").hidden = false;
     document.getElementById("heap-size-display").textContent = "###";
   }
 }
-updateUsedJsHeapSize();
 
 ///////////////////////////
 // Set up Click Handlers //
@@ -122,6 +119,10 @@ document.getElementById("collect-garbage").onclick = async () => {
 
 document.getElementById("gc-flags-info-button").onclick = () => {
   gcFlagsModal.show();
+};
+
+document.getElementById("update-heap-size").onclick = () => {
+  updateUsedJsHeapSize();
 };
 
 function shouldApplyProxy() {
