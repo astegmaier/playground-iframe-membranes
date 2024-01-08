@@ -17,7 +17,7 @@ declare global {
     gc: (options: { execution: "async" }) => Promise<void>;
   }
   interface Performance {
-    memory?: { usedJSHeapSize?: number };
+    memory?: { usedJSHeapSize?: number; totalJSHeapSize?: number; jsHeapSizeLimit?: number };
   }
 }
 

@@ -105,22 +105,23 @@
       <hr />
       <h2>Run Selected Scenario</h2>
       <div class="btn-group mb-3" role="group">
-        <button class="btn btn-outline-primary" id="run-scenario">Add Iframe And Run Scenario</button>
+        <button class="btn btn-primary" id="run-scenario">Add Iframe And Run Scenario</button>
         <button class="btn btn-outline-secondary" id="remove-iframes">Remove All Iframes</button>
         <button class="btn btn-outline-secondary" id="collect-garbage">Collect Garbage</button>
         <button class="btn btn-outline-secondary" id="reset-scenario">Reset Scenario</button>
       </div>
-      <div class="form-check mb-3">
+      <div class="form-check">
         <input class="form-check-input" type="checkbox" value="" id="apply-proxy-checkbox" />
         <label class="form-check-label" for="apply-proxy-checkbox">Apply proxy before running scenario.</label>
       </div>
-      <p>
-        Heap size: <span id="heap-size-display">###</span> MB
-        <button class="btn btn-outline-secondary" id="update-heap-size">Update Heap Size</button>
-        <button class="btn btn-outline-info" id="gc-flags-info-button">
-          <i class="fa fa-info-circle"></i>
-        </button>
-      </p>
+      <div class="form-check form-check-inline me-0">
+        <input class="form-check-input" type="checkbox" value="" id="enable-continuous-garbage-collection" />
+        <label class="form-check-label" for="enable-continuous-garbage-collection">Continuously request garbage collection.</label>
+      </div>
+      <button type="button" class="btn btn-link" id="enable-continuous-garbage-collection-info-button" title="Information">
+        <i class="fa fa-info-circle"></i>
+      </button>
+      <div class="mt-1">Heap size: <span id="heap-size-display">###</span> MB</div>
       <div class="mt-3" id="all-runs-container"></div>
     </div>
     <div class="modal" id="gc-flags-modal" tabindex="-1" aria-labelledby="gc-flags-modal-title" aria-hidden="true">
@@ -131,7 +132,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div>In order for the "Collect Garbage" button and "Heap Size" display to work, please run with your browser with flags: E.g.:</div>
+            <div>In order for requests for garbage collection to work, please run with your browser with flags: E.g.:</div>
             <ul>
               <li>
                 <b>PC:</b>
