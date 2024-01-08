@@ -2,6 +2,18 @@
 <html>
   <head>
     <title>Iframe Proxies Playground</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"
+      integrity="sha512-bgHRAiTjGrzHzLyKOnpFvaEpGzJet3z4tZnXGjpsCcqOnAH6VGUx9frc5bcIhKTVLEiCO6vEhNAgx5jtLUYrfA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"
+      integrity="sha512-oSA0PdOBsyP4Cv5rIHOWhOr+H0ZPOE/L8UKaX33DjBFD+TrWOZZfewjg85Z7WhNPkQrHeTKOYSio/XM6FBPhWA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%2210 0 100 100%22><text y=%22.90em%22 font-size=%2290%22>☯</text></svg>"
@@ -69,6 +81,13 @@
         To view the full code running on this page, see
         <a href="https://github.com/astegmaier/playground-hung-iframe-promise">this github repo</a>.
       </p>
+      <hr />
+      <h2>Proof-of-Concept Proxy</h2>
+      <p>
+        The code below implements a proof-of-concept of a recursive "membrane" revokable proxy that can be applied to the contentWindow of a
+        same-domain iframe.
+      </p>
+      <pre><code class="language-javascript" id="code-solution"></code></pre>
       <hr />
       <h2>Test Scenarios</h2>
       <div class="form-floating mb-3">

@@ -1,7 +1,3 @@
-import markdownit from "https://cdn.skypack.dev/markdown-it";
-import hljs from "https://cdn.skypack.dev/highlight.js";
-const md = markdownit();
-
 /**
  * Updates the UI in the app that describes the scenario and displays the code that will run inside the iframe and the main page.
  * @param {string} scenarioId String identifying the scenario. These should correspond to folders inside the "scenarios" folder.
@@ -25,5 +21,5 @@ export function updateScenarioDescription(scenarioId) {
     });
   fetch(`./scenarios/${scenarioId}/index.md`)
     .then((response) => response.text())
-    .then((markdown) => (document.getElementById("scenario-description").innerHTML = md.render(markdown)));
+    .then((markdown) => (document.getElementById("scenario-description").innerHTML = marked.parse(markdown)));
 }

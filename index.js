@@ -30,12 +30,36 @@ scenarioDropdown.addEventListener("change", (e) => {
   url.searchParams.set("scenario", scenarioId);
   history.pushState({}, "", url);
   updateScenarioDescription(scenarioId);
+  updateUsedJsHeapSize();
 });
 
 window.addEventListener("popstate", () => {
   scenarioDropdown.value = tryGetScenarioFromQuery();
   updateScenarioDescription(scenarioDropdown.value);
+  updateUsedJsHeapSize();
 });
+
+// Display the proxy "solution" code.
+fetch(`./solution.js`)
+  .then((response) => response.text())
+  .then((code) => {
+    const iframeCodeContainer = document.getElementById("code-solution");
+    iframeCodeContainer.textContent = code;
+    hljs.highlightElement(iframeCodeContainer);
+  });
+
+// Display javascript heap size, if possible.
+function updateUsedJsHeapSize() {
+  try {
+    document.getElementById("gc-flags-info-button").hidden = true;
+    const heapSize = (performance.memory.usedJSHeapSize / Math.pow(1000, 2)).toFixed(4);
+    document.getElementById("heap-size-display").textContent = heapSize;
+  } catch (e) {
+    document.getElementById("gc-flags-info-button").hidden = false;
+    document.getElementById("heap-size-display").textContent = "###";
+  }
+}
+updateUsedJsHeapSize();
 
 ///////////////////////////
 // Set up Click Handlers //
@@ -84,15 +108,3 @@ document.getElementById("collect-garbage").onclick = async () => {
 document.getElementById("gc-flags-info-button").onclick = () => {
   gcFlagsModal.show();
 };
-
-function updateUsedJsHeapSize() {
-  try {
-    document.getElementById("gc-flags-info-button").hidden = true;
-    const heapSize = (performance.memory.usedJSHeapSize / Math.pow(1000, 2)).toFixed(4);
-    document.getElementById("heap-size-display").textContent = heapSize;
-  } catch (e) {
-    document.getElementById("gc-flags-info-button").hidden = false;
-    document.getElementById("heap-size-display").textContent = "###";
-  }
-}
-updateUsedJsHeapSize();

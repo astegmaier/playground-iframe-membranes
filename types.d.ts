@@ -1,13 +1,3 @@
-declare module "https://cdn.skypack.dev/markdown-it" {
-  function markdownit(): { render(markdwon: string): string };
-  export default markdownit;
-}
-
-declare module "https://cdn.skypack.dev/highlight.js" {
-  const hljs: { highlightElement(element: HTMLElement): void };
-  export default hljs;
-}
-
 type IframeFinalizationRegistry = FinalizationRegistry<{ runNumber: number; kind: "iframe" | "iframe-window" }>;
 
 declare global {
@@ -16,6 +6,12 @@ declare global {
       constructor(target: HTMLElement, options?: any);
       public show(): void;
     }
+  }
+  namespace marked {
+    function parse(markdown: string): string;
+  }
+  namespace hljs {
+    function highlightElement(element: HTMLElement): void;
   }
   interface Window {
     finalizationRegistry: IframeFinalizationRegistry;
