@@ -1,6 +1,5 @@
-type IframeFinalizationRegistry = FinalizationRegistry<{ runNumber: number; kind: "iframe" | "iframe-window" }>;
-
 declare global {
+  type IframeFinalizationRegistry = FinalizationRegistry<{ runNumber: number; kind: "iframe" | "iframe-window" }>;
   namespace bootstrap {
     class Modal {
       constructor(target: HTMLElement, options?: any);
