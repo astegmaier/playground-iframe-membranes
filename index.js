@@ -45,6 +45,7 @@ document.getElementById("run-scenario").onclick = async () => {
   const scenarioModule = await import(`./scenarios/${scenarioDropdown.value}/index.js`);
   const iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
   await scenarioModule.runScenario(iframe);
+  updateUsedJsHeapSize();
 };
 
 document.getElementById("remove-iframes").onclick = () => {
@@ -56,6 +57,7 @@ document.getElementById("remove-iframes").onclick = () => {
     }
   }
   console.log("All iframes removed.");
+  updateUsedJsHeapSize();
 };
 
 document.getElementById("reset-scenario").onclick = () => {
@@ -63,6 +65,7 @@ document.getElementById("reset-scenario").onclick = () => {
   document.getElementById("all-runs-container").textContent = "";
   window.finalizationRegistry = initializeFinalizationRegistry();
   console.log("Scenario reset.");
+  updateUsedJsHeapSize();
 };
 
 const gcFlagsModal = new bootstrap.Modal(document.getElementById("gc-flags-modal"));
@@ -75,4 +78,21 @@ document.getElementById("collect-garbage").onclick = async () => {
     gcFlagsModal.show();
     console.warn("Unable to trigger garbage collection - please run with --expose-gc flag.");
   }
+  updateUsedJsHeapSize();
 };
+
+document.getElementById("gc-flags-info-button").onclick = () => {
+  gcFlagsModal.show();
+};
+
+function updateUsedJsHeapSize() {
+  try {
+    document.getElementById("gc-flags-info-button").hidden = true;
+    const heapSize = (performance.memory.usedJSHeapSize / Math.pow(1000, 2)).toFixed(4);
+    document.getElementById("heap-size-display").textContent = heapSize;
+  } catch (e) {
+    document.getElementById("gc-flags-info-button").hidden = false;
+    document.getElementById("heap-size-display").textContent = "###";
+  }
+}
+updateUsedJsHeapSize();

@@ -21,6 +21,9 @@ declare global {
     finalizationRegistry: IframeFinalizationRegistry;
     gc: (options: { execution: "async" }) => Promise<void>;
   }
+  interface Performance {
+    memory?: { usedJSHeapSize?: number };
+  }
 }
 
 // This is necessary to make typescript tread this d.ts file as a module, rather than a global file.
