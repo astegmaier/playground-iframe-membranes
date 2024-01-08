@@ -65,9 +65,19 @@ updateUsedJsHeapSize();
 // Set up Click Handlers //
 ///////////////////////////
 
+const proxyRevokeFns = new Set();
+
 document.getElementById("run-scenario").onclick = async () => {
   const scenarioModule = await import(`./scenarios/${scenarioDropdown.value}/index.js`);
-  const iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
+  let iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
+  if (shouldApplyProxy()) {
+    console.log("Applying proxy...");
+    const solutionModule = await import(`./solution.js`);
+    const { proxy, revoke } = solutionModule.createRevocableProxy(iframe);
+    iframe = proxy;
+    proxyRevokeFns.add(revoke);
+  }
+  console.log(`Running scenario ${scenarioDropdown.value} - ${runCount}...`);
   await scenarioModule.runScenario(iframe);
   updateUsedJsHeapSize();
 };
@@ -95,6 +105,11 @@ document.getElementById("reset-scenario").onclick = () => {
 const gcFlagsModal = new bootstrap.Modal(document.getElementById("gc-flags-modal"));
 
 document.getElementById("collect-garbage").onclick = async () => {
+  if (shouldApplyProxy()) {
+    console.log(`Revoking ${proxyRevokeFns.size} proxies...`);
+    proxyRevokeFns.forEach((revoke) => revoke());
+    proxyRevokeFns.clear();
+  }
   if (window.gc) {
     await window.gc?.({ execution: "async" });
     console.log("Garbage collection finished.");
@@ -107,4 +122,16 @@ document.getElementById("collect-garbage").onclick = async () => {
 
 document.getElementById("gc-flags-info-button").onclick = () => {
   gcFlagsModal.show();
+};
+
+function shouldApplyProxy() {
+  return /** @type {HTMLInputElement} */ (document.getElementById("apply-proxy-checkbox")).checked;
+}
+
+document.getElementById("apply-proxy-checkbox").onchange = (e) => {
+  if (shouldApplyProxy()) {
+    document.getElementById("collect-garbage").textContent = "Revoke Proxy and Collect Garbage";
+  } else {
+    document.getElementById("collect-garbage").textContent = "Collect Garbage";
+  }
 };
