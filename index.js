@@ -32,12 +32,14 @@ scenarioDropdown.addEventListener("change", (e) => {
   url.searchParams.set("scenario", scenarioId);
   history.pushState({}, "", url);
   updateScenarioDescription(scenarioId);
+  resetRuns();
   updateUsedJsHeapSize();
 });
 
 window.addEventListener("popstate", () => {
   scenarioDropdown.value = tryGetScenarioFromQuery();
   updateScenarioDescription(scenarioDropdown.value);
+  resetRuns();
   updateUsedJsHeapSize();
 });
 
@@ -102,12 +104,13 @@ document.getElementById("remove-iframes").onclick = () => {
   console.log("All iframes removed.");
 };
 
-document.getElementById("reset-scenario").onclick = () => {
+function resetRuns() {
   runCount = 0;
   document.getElementById("all-runs-container").textContent = "";
   window.finalizationRegistry = initializeFinalizationRegistry();
-  console.log("Scenario reset.");
-};
+  console.log("Scenario tests reset.");
+}
+document.getElementById("reset-runs").onclick = resetRuns;
 
 const gcFlagsModal = new bootstrap.Modal(document.getElementById("gc-flags-modal"));
 
