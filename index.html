@@ -92,6 +92,26 @@
         <a href="https://github.com/astegmaier/playground-hung-iframe-promise">this github repo</a>.
       </p>
       <hr />
+      <h2>Prior Art</h2>
+      <p>
+        The concept of a "membrane" was coined (or at least popularized in a JavaScript context) by Tom Van Cutsem, who was one of the intellectual
+        forces behind the design of the Reflect, Proxy, and RevokableProxy APIs in JavaScript.
+      </p>
+      <ul>
+        <li>
+          <a href="https://research.google/pubs/on-the-design-of-the-ecmascript-reflection-api/">On the design of the ECMAScript Reflection API</a> -
+          2012 research paper.
+        </li>
+        <li><a href="https://tvcutsem.github.io/js-membranes">Membranes in JavaScript</a> - 2012 blog post.</li>
+        <li><a href="https://tvcutsem.github.io/membranes">Isolating application sub-components with membranes</a> - 2018 blog post.</li>
+      </ul>
+      <p>There are several open-source projects that apply this idea to various contexts, including:</p>
+      <ul>
+        <li><a href="https://github.com/ajvincent/es-membrane">github.com/ajvincent/es-membrane</a></li>
+        <li><a href="https://github.com/salesforce/observable-membrane">github.com/salesforce/observable-membrane</a></li>
+        <li><a href="https://github.com/salesforce/near-membrane">github.com/salesforce/near-membrane</a></li>
+      </ul>
+      <hr />
       <h2>Proof-of-Concept Proxy</h2>
       <p>
         The code below implements a proof-of-concept of a recursive "membrane" revokable proxy that can be applied to the contentWindow of a
