@@ -17,27 +17,40 @@ const validScenarios = new Set(Array.from(scenarioDropdown.options).map((option)
 const continuousGcCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("enable-continuous-garbage-collection"));
 const applyProxyCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("apply-proxy-checkbox"));
 
-// Set the initial scenario from the url, if possible.
-function tryGetScenarioFromQuery() {
-  const scenarioId = new URLSearchParams(window.location.search).get("scenario");
-  return validScenarios.has(scenarioId) ? scenarioId : scenarioDropdown.options[0].value;
+// Set the initial state from the url, if possible.
+function trySetStateFromQuery() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const scenarioId = searchParams.get("scenario");
+  scenarioDropdown.value = validScenarios.has(scenarioId) ? scenarioId : scenarioDropdown.options[0].value;
+  const applyProxy = searchParams.get("applyProxy");
+  applyProxyCheckbox.checked = applyProxy?.toLowerCase() === "true" ? true : false;
 }
-scenarioDropdown.value = tryGetScenarioFromQuery();
+trySetStateFromQuery();
 updateScenarioDescription(scenarioDropdown.value);
 
-// Changes to the dropdown should be reflected in the url and the app UI (and vice versa).
-scenarioDropdown.addEventListener("change", (e) => {
-  const scenarioId = /** @type {HTMLSelectElement} */ (e.currentTarget).value;
+// Changes to the controls where the state is stored should be reflected in the url and the app UI (and vice versa).
+scenarioDropdown.onchange = () => {
   const url = new URL(window.location.href);
-  url.searchParams.set("scenario", scenarioId);
+  url.searchParams.set("scenario", scenarioDropdown.value);
   history.pushState({}, "", url);
-  updateScenarioDescription(scenarioId);
+  updateScenarioDescription(scenarioDropdown.value);
   resetRuns();
   updateUsedJsHeapSize();
-});
+};
+
+applyProxyCheckbox.onchange = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.set("proxy", applyProxyCheckbox.checked.toString());
+  history.pushState({}, "", url);
+  if (applyProxyCheckbox.checked) {
+    document.getElementById("collect-garbage").textContent = "Revoke Proxy and Collect Garbage";
+  } else {
+    document.getElementById("collect-garbage").textContent = "Collect Garbage";
+  }
+};
 
 window.addEventListener("popstate", () => {
-  scenarioDropdown.value = tryGetScenarioFromQuery();
+  trySetStateFromQuery();
   updateScenarioDescription(scenarioDropdown.value);
   resetRuns();
   updateUsedJsHeapSize();
@@ -131,12 +144,4 @@ document.getElementById("collect-garbage").onclick = async () => {
 
 document.getElementById("enable-continuous-garbage-collection-info-button").onclick = () => {
   gcFlagsModal.show();
-};
-
-document.getElementById("apply-proxy-checkbox").onchange = () => {
-  if (applyProxyCheckbox.checked) {
-    document.getElementById("collect-garbage").textContent = "Revoke Proxy and Collect Garbage";
-  } else {
-    document.getElementById("collect-garbage").textContent = "Collect Garbage";
-  }
 };
