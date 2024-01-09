@@ -24,6 +24,12 @@ function trySetStateFromQuery() {
   scenarioDropdown.value = validScenarios.has(scenarioId) ? scenarioId : scenarioDropdown.options[0].value;
   const applyProxy = searchParams.get("applyProxy");
   applyProxyCheckbox.checked = applyProxy?.toLowerCase() === "true" ? true : false;
+  // TODO: maybe we should refactor the way we're storing state to avoid duplicating this code with the applyProxyCheckbox.onchange handler.
+  if (applyProxyCheckbox.checked) {
+    document.getElementById("collect-garbage").textContent = "Revoke Proxy and Collect Garbage";
+  } else {
+    document.getElementById("collect-garbage").textContent = "Collect Garbage";
+  }
 }
 trySetStateFromQuery();
 updateScenarioDescription(scenarioDropdown.value);
@@ -40,7 +46,7 @@ scenarioDropdown.onchange = () => {
 
 applyProxyCheckbox.onchange = () => {
   const url = new URL(window.location.href);
-  url.searchParams.set("proxy", applyProxyCheckbox.checked.toString());
+  url.searchParams.set("applyProxy", applyProxyCheckbox.checked.toString());
   history.pushState({}, "", url);
   if (applyProxyCheckbox.checked) {
     document.getElementById("collect-garbage").textContent = "Revoke Proxy and Collect Garbage";

@@ -1,5 +1,5 @@
 window.leakedIframeRetainers = new Set();
 
-export const runScenario = (iframe) => {
+export function runScenario(iframe) {
   window.leakedIframeRetainers.add(iframe);
-};
+}
