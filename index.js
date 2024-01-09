@@ -103,6 +103,7 @@ document.getElementById("run-scenario").onclick = async () => {
   let iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
   if (applyProxyCheckbox.checked) {
     console.log("Applying proxy...");
+    // @ts-ignore
     const solutionModule = await import(`./solution.js`);
     const { proxy, revoke } = solutionModule.createRevocableProxy(iframe);
     iframe = proxy;
