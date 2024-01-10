@@ -1,8 +1,8 @@
-export function createMembrane(target) {
+export function createMembrane(target: object) {
   const revokeFnsCache = new RevokeFnsCache();
   const proxy = createRevocableProxy(target, revokeFnsCache);
   return {
-    target: proxy,
+    membrane: proxy,
     // TODO: maybe try-catch here?
     revoke: () => {
       revokeFnsCache.revokeAll();
@@ -10,24 +10,24 @@ export function createMembrane(target) {
   };
 }
 
-function createRevocableProxy(target, revokeFnsCache) {
-  const { proxy, revoke } = Proxy.revocable(target, {
+function createRevocableProxy<T extends object>(target: T, revokeFnsCache: RevokeFnsCache) {
+  const { proxy, revoke }: { proxy: T; revoke: () => void } = Proxy.revocable<T>(target, {
     get(target, name) {
       const originalValue = Reflect.get(target, name);
-      return isPrimitive(originalValue) ? originalValue : createRevocableProxy(originalValue, revokeFnsCache);
+      return isObject(originalValue) ? createRevocableProxy(originalValue, revokeFnsCache) : originalValue;
     },
     apply(target, thisArg, argArray) {
-      const returnValue = Reflect.apply(target, thisArg, argArray);
-      return isPrimitive(returnValue) ? returnValue : createRevocableProxy(returnValue, revokeFnsCache);
+      const returnValue = Reflect.apply(target as any, thisArg, argArray);
+      return isObject(returnValue) ? createRevocableProxy(returnValue, revokeFnsCache) : returnValue;
     },
   });
   revokeFnsCache.add(proxy, revoke);
   return proxy;
 }
 
-function isPrimitive(value) {
+function isObject(value: unknown): value is object {
   // TODO: are there any edge cases to consider here?
-  return (typeof value !== "object" && typeof value !== "function") || value === null;
+  return (typeof value === "object" && value !== null) || typeof value === "function";
 }
 
 /**
@@ -41,9 +41,9 @@ function isPrimitive(value) {
  * WeakMaps are not iterable, though, so we also have to keep a separate array of WeakRefs to the revoke functions.
  */
 class RevokeFnsCache {
-  proxyToRevokeFn = new WeakMap(); // Key: proxy, Value: revokeFn.
-  revokeFnWeakRefs = [];
-  add(proxy, revokeFn) {
+  private proxyToRevokeFn = new WeakMap<object, () => void>();
+  private revokeFnWeakRefs: WeakRef<() => void | undefined>[] = [];
+  add(proxy: object, revokeFn: () => void) {
     this.proxyToRevokeFn.set(proxy, revokeFn);
     this.revokeFnWeakRefs.push(new WeakRef(revokeFn));
   }

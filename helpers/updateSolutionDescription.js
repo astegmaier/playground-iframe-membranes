@@ -3,7 +3,7 @@
  * @param {string} solutionId String identifying the solution. These should correspond to folders inside the "solutions" folder.
  */
 export function updateSolutionDescription(solutionId) {
-  fetch(`./solutions/${solutionId}/index.js`)
+  fetch(`./solutions/${solutionId}/index.ts`)
     .then((response) => response.text())
     .then((code) => {
       const codeContainer = document.getElementById("code-solution");
