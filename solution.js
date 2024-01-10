@@ -1,29 +1,27 @@
 export function createRevocableProxy(target) {
-  // The revoke function maintains a connection to its associated proxy until it is called.
-  // If a proxy gets garbage collected, there is no point in revoking it - we use weak refs to allow this to happen.
-  const revokableFnWeakRefs = [];
-  const proxy = innerCreateRevocableProxy(target, revokableFnWeakRefs);
+  const revokeFns = [];
+  const proxy = innerCreateRevocableProxy(target, revokeFns);
   return {
     proxy,
     // TODO: maybe try-catch here?
     revoke: () => {
-      revokableFnWeakRefs.forEach((weakRef) => weakRef.deref()?.());
+      revokeFns.forEach((revoke) => revoke());
     },
   };
 }
 
-function innerCreateRevocableProxy(target, revokableFnWeakRefs) {
+function innerCreateRevocableProxy(target, revokeFns) {
   const { proxy, revoke } = Proxy.revocable(target, {
     get(target, name) {
       const originalValue = Reflect.get(target, name);
-      return isPrimitive(originalValue) ? originalValue : innerCreateRevocableProxy(originalValue, revokableFnWeakRefs);
+      return isPrimitive(originalValue) ? originalValue : innerCreateRevocableProxy(originalValue, revokeFns);
     },
     apply(target, thisArg, argArray) {
       const returnValue = Reflect.apply(target, thisArg, argArray);
-      return isPrimitive(returnValue) ? returnValue : innerCreateRevocableProxy(returnValue, revokableFnWeakRefs);
+      return isPrimitive(returnValue) ? returnValue : innerCreateRevocableProxy(returnValue, revokeFns);
     },
   });
-  revokableFnWeakRefs.push(new WeakRef(revoke));
+  revokeFns.push(revoke);
   return proxy;
 }
 
