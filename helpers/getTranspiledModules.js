@@ -1,4 +1,4 @@
-const transpilerWorker = new Worker("/helpers/transpiler-worker.js");
+const transpilerWorker = new Worker("helpers/transpiler-worker.js");
 transpilerWorker.addEventListener("message", async (e) => {
   const { scriptUrl, transpiledCode, error } = e.data;
   if (error) {
