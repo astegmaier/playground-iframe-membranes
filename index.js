@@ -1,6 +1,6 @@
 import { getTrackedIframe } from "./helpers/getTrackedIframe.js";
+import { getTranspiledModules } from "./helpers/getTranspiledModules.js";
 import { initializeFinalizationRegistry } from "./helpers/initializeFinalizationRegistry.js";
-import { transpileAndImport } from "./helpers/transpileAndImport.js";
 import { updateRunStatus } from "./helpers/updateRunStatus.js";
 import { updateScenarioDescription } from "./helpers/updateScenarioDescription.js";
 import { updateSolutionDescription } from "./helpers/updateSolutionDescription.js";
@@ -100,6 +100,9 @@ if (window.gc) {
   continuousGcCheckbox.disabled = true;
 }
 
+// Pre-transpile and import all the 'solution' scripts so they are available when needed.
+const solutionModules = getTranspiledModules(Array.from(validSolutions).map((solutionId) => `/solutions/${solutionId}/index.ts`));
+
 ///////////////////////////
 // Set up Click Handlers //
 ///////////////////////////
@@ -111,7 +114,7 @@ document.getElementById("run-scenario").onclick = async () => {
   let iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
   if (applyMembraneCheckbox.checked) {
     console.log(`Applying membrane solution ${solutionDropdown.value}...`);
-    const solutionModule = await transpileAndImport(`./solutions/${solutionDropdown.value}/index.ts`);
+    const solutionModule = await solutionModules[`/solutions/${solutionDropdown.value}/index.ts`];
     const { membrane, revoke } = solutionModule.createMembrane(iframe);
     iframe = membrane;
     membraneRevokeFns.add(revoke);
