@@ -32,10 +32,11 @@ function isPrimitive(value) {
 
 /**
  * Stores revoke functions for all the proxies created by the membrane.
- * The problem we are trying to solve here is that revoke functions keep references to their proxies (before they are called and the proxy is revoked).
+ * The problem we are trying to solve here is that revoke functions keep references to their proxies (before they are called).
  * So if we kept a _hard_ reference to the revoke function, it would keep the proxy alive for longer than it needs to be.
  * (i.e. if there are no other references to it besides the revoke function, we don't want to stop it from being gc'd).
- * But if we only keep a _weak_ reference to the revoke function, the function itself would get gc'd at the first opportunity, which would mean that we wouldn't have a means to revoke the still-alive proxies.
+ * But if we only keep a _weak_ reference to the revoke function, the function itself would get gc'd at the first opportunity,
+ * which would mean that we wouldn't have a means to revoke the still-alive proxies.
  * This solution uses a WeakMap to link the lifetime of the proxy to the lifetime of the revoke function.
  * WeakMaps are not iterable, though, so we also have to keep a separate array of WeakRefs to the revoke functions.
  */
