@@ -18,7 +18,7 @@ const solutionDropdown = /** @type {HTMLSelectElement} */ (document.getElementBy
 const validScenarios = new Set(Array.from(scenarioDropdown.options).map((option) => option.value));
 const validSolutions = new Set(Array.from(solutionDropdown.options).map((option) => option.value));
 const continuousGcCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("enable-continuous-garbage-collection"));
-const applyProxyCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("apply-proxy-checkbox"));
+const applyMembraneCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("apply-membrane-checkbox"));
 
 // Set the initial state from the url, if possible.
 function trySetStateFromQuery() {
@@ -27,11 +27,11 @@ function trySetStateFromQuery() {
   scenarioDropdown.value = validScenarios.has(scenarioId) ? scenarioId : scenarioDropdown.options[0].value;
   const solutionId = searchParams.get("solution");
   solutionDropdown.value = validSolutions.has(solutionId) ? solutionId : solutionDropdown.options[0].value;
-  const applyProxy = searchParams.get("applyProxy");
-  applyProxyCheckbox.checked = applyProxy?.toLowerCase() === "true" ? true : false;
-  // TODO: maybe we should refactor the way we're storing state to avoid duplicating this code with the applyProxyCheckbox.onchange handler.
-  if (applyProxyCheckbox.checked) {
-    document.getElementById("collect-garbage").textContent = "Revoke Proxy and Collect Garbage";
+  const applyMembrane = searchParams.get("applyMembrane");
+  applyMembraneCheckbox.checked = applyMembrane?.toLowerCase() === "true" ? true : false;
+  // TODO: maybe we should refactor the way we're storing state to avoid duplicating this code with the applyMembraneCheckbox.onchange handler.
+  if (applyMembraneCheckbox.checked) {
+    document.getElementById("collect-garbage").textContent = "Revoke Membrane and Collect Garbage";
   } else {
     document.getElementById("collect-garbage").textContent = "Collect Garbage";
   }
@@ -59,12 +59,12 @@ solutionDropdown.onchange = () => {
   updateUsedJsHeapSize();
 };
 
-applyProxyCheckbox.onchange = () => {
+applyMembraneCheckbox.onchange = () => {
   const url = new URL(window.location.href);
-  url.searchParams.set("applyProxy", applyProxyCheckbox.checked.toString());
+  url.searchParams.set("applyMembrane", applyMembraneCheckbox.checked.toString());
   history.pushState({}, "", url);
-  if (applyProxyCheckbox.checked) {
-    document.getElementById("collect-garbage").textContent = "Revoke Proxy and Collect Garbage";
+  if (applyMembraneCheckbox.checked) {
+    document.getElementById("collect-garbage").textContent = "Revoke Membrane and Collect Garbage";
   } else {
     document.getElementById("collect-garbage").textContent = "Collect Garbage";
   }
@@ -103,17 +103,17 @@ if (window.gc) {
 // Set up Click Handlers //
 ///////////////////////////
 
-const proxyRevokeFns = new Set();
+const membraneRevokeFns = new Set();
 
 document.getElementById("run-scenario").onclick = async () => {
   const scenarioModule = await import(`./scenarios/${scenarioDropdown.value}/index.js`);
   let iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
-  if (applyProxyCheckbox.checked) {
+  if (applyMembraneCheckbox.checked) {
     console.log(`Applying membrane solution ${solutionDropdown.value}...`);
     const solutionModule = await import(`./solutions/${solutionDropdown.value}/index.js`);
     const { target, revoke } = solutionModule.createMembrane(iframe);
     iframe = target;
-    proxyRevokeFns.add(revoke);
+    membraneRevokeFns.add(revoke);
   }
   console.log(`Running scenario ${scenarioDropdown.value} - ${runCount}...`);
   await scenarioModule.runScenario(iframe);
@@ -141,10 +141,10 @@ document.getElementById("reset-runs").onclick = resetRuns;
 const gcFlagsModal = new bootstrap.Modal(document.getElementById("gc-flags-modal"));
 
 document.getElementById("collect-garbage").onclick = async () => {
-  if (applyProxyCheckbox.checked) {
-    console.log(`Revoking ${proxyRevokeFns.size} proxies...`);
-    proxyRevokeFns.forEach((revoke) => revoke());
-    proxyRevokeFns.clear();
+  if (applyMembraneCheckbox.checked) {
+    console.log(`Revoking ${membraneRevokeFns.size} membranes...`);
+    membraneRevokeFns.forEach((revoke) => revoke());
+    membraneRevokeFns.clear();
   }
   if (window.gc) {
     await window.gc?.({ execution: "async" });
