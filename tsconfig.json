@@ -11,5 +11,5 @@
     "strictNullChecks": false /* When type checking, take into account 'null' and 'undefined'. */,
     "noResolve": true
   },
-  "exclude": ["scenarios", "solution.js"]
+  "exclude": ["scenarios", "solutions", "stash"]
 }
