@@ -84,7 +84,7 @@ async function updateUsedJsHeapSize() {
     await window.gc?.({ execution: "async" });
   }
   try {
-    const heapSize = (performance.memory.totalJSHeapSize / Math.pow(1000, 2)).toFixed(2);
+    const heapSize = (performance.memory.usedJSHeapSize / Math.pow(1000, 2)).toFixed(2);
     document.getElementById("heap-size-display").textContent = heapSize;
   } catch (e) {
     document.getElementById("heap-size-display").textContent = "###";
