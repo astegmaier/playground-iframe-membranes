@@ -109,9 +109,8 @@ document.getElementById("run-scenario").onclick = async () => {
   const scenarioModule = await import(`./scenarios/${scenarioDropdown.value}/index.js`);
   let iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
   if (applyProxyCheckbox.checked) {
-    console.log("Applying proxy...");
-    // @ts-ignore
-    const solutionModule = await import(`./solution.js`);
+    console.log(`Applying membrane solution ${solutionDropdown.value}...`);
+    const solutionModule = await import(`./solutions/${solutionDropdown.value}/index.js`);
     const { target, revoke } = solutionModule.createMembrane(iframe);
     iframe = target;
     proxyRevokeFns.add(revoke);
