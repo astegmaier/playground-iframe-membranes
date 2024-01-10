@@ -1,5 +1,6 @@
 import { getTrackedIframe } from "./helpers/getTrackedIframe.js";
 import { initializeFinalizationRegistry } from "./helpers/initializeFinalizationRegistry.js";
+import { transpileAndImport } from "./helpers/transpileAndImport.js";
 import { updateRunStatus } from "./helpers/updateRunStatus.js";
 import { updateScenarioDescription } from "./helpers/updateScenarioDescription.js";
 import { updateSolutionDescription } from "./helpers/updateSolutionDescription.js";
@@ -110,9 +111,9 @@ document.getElementById("run-scenario").onclick = async () => {
   let iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
   if (applyMembraneCheckbox.checked) {
     console.log(`Applying membrane solution ${solutionDropdown.value}...`);
-    const solutionModule = await import(`./solutions/${solutionDropdown.value}/index.js`);
-    const { target, revoke } = solutionModule.createMembrane(iframe);
-    iframe = target;
+    const solutionModule = await transpileAndImport(`./solutions/${solutionDropdown.value}/index.ts`);
+    const { membrane, revoke } = solutionModule.createMembrane(iframe);
+    iframe = membrane;
     membraneRevokeFns.add(revoke);
   }
   console.log(`Running scenario ${scenarioDropdown.value} - ${runCount}...`);

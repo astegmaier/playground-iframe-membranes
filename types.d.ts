@@ -12,6 +12,22 @@ declare global {
   namespace hljs {
     function highlightElement(element: HTMLElement): void;
   }
+  namespace ts {
+    function transpileModule(code: string, options: { compilerOptions: { module: ModuleKind } }): { outputText: string };
+    enum ModuleKind {
+      None = 0,
+      CommonJS = 1,
+      AMD = 2,
+      UMD = 3,
+      System = 4,
+      ES2015 = 5,
+      ES2020 = 6,
+      ES2022 = 7,
+      ESNext = 99,
+      Node16 = 100,
+      NodeNext = 199,
+    }
+  }
   interface Window {
     finalizationRegistry: IframeFinalizationRegistry;
     gc: (options: { execution: "async" }) => Promise<void>;
