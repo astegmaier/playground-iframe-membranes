@@ -2,17 +2,17 @@ const transpilerWorker = new Worker("/helpers/transpiler-worker.js");
 transpilerWorker.addEventListener("message", async (e) => {
   const { scriptUrl, transpiledCode, error } = e.data;
   if (error) {
-    resolveAndRejectFns[scriptUrl]?.rejectFn(error);
+    resolveAndRejectFns[scriptUrl]?.reject(error);
   } else {
     const module = await import("data:text/javascript;base64," + btoa(transpiledCode));
-    resolveAndRejectFns[scriptUrl]?.resolveFn(module);
+    resolveAndRejectFns[scriptUrl]?.resolve(module);
   }
 });
 
 /** @type {{[scriptUrl: string]: Promise<string> }} */
 const transpiledModulePromises = {};
 
-/** @type {{[scriptUrl: string]: {resolveFn: (result: any) => void, rejectFn: (reason: any) => void}}} */
+/** @type {{[scriptUrl: string]: {resolve: (result: any) => void, reject: (reason: any) => void}}} */
 const resolveAndRejectFns = {};
 
 /**
@@ -23,12 +23,9 @@ const resolveAndRejectFns = {};
 export function getTranspiledModules(scriptPaths) {
   scriptPaths.forEach((url) => {
     if (!transpiledModulePromises[url]) {
-      let resolveFn, rejectFn;
       transpiledModulePromises[url] = new Promise((resolve, reject) => {
-        resolveFn = resolve;
-        rejectFn = reject;
+        resolveAndRejectFns[url] = { resolve, reject };
       });
-      resolveAndRejectFns[url] = { resolveFn, rejectFn };
       transpilerWorker.postMessage(url);
     }
   });
