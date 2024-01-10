@@ -1,8 +1,8 @@
-export function createRevocableProxy(target) {
+export function createMembrane(target) {
   const revokeFns = [];
-  const proxy = innerCreateRevocableProxy(target, revokeFns);
+  const proxy = createRevocableProxy(target, revokeFns);
   return {
-    proxy,
+    target: proxy,
     // TODO: maybe try-catch here?
     revoke: () => {
       revokeFns.forEach((revoke) => revoke());
@@ -10,15 +10,15 @@ export function createRevocableProxy(target) {
   };
 }
 
-function innerCreateRevocableProxy(target, revokeFns) {
+function createRevocableProxy(target, revokeFns) {
   const { proxy, revoke } = Proxy.revocable(target, {
     get(target, name) {
       const originalValue = Reflect.get(target, name);
-      return isPrimitive(originalValue) ? originalValue : innerCreateRevocableProxy(originalValue, revokeFns);
+      return isPrimitive(originalValue) ? originalValue : createRevocableProxy(originalValue, revokeFns);
     },
     apply(target, thisArg, argArray) {
       const returnValue = Reflect.apply(target, thisArg, argArray);
-      return isPrimitive(returnValue) ? returnValue : innerCreateRevocableProxy(returnValue, revokeFns);
+      return isPrimitive(returnValue) ? returnValue : createRevocableProxy(returnValue, revokeFns);
     },
   });
   revokeFns.push(revoke);

@@ -105,8 +105,8 @@ document.getElementById("run-scenario").onclick = async () => {
     console.log("Applying proxy...");
     // @ts-ignore
     const solutionModule = await import(`./solution.js`);
-    const { proxy, revoke } = solutionModule.createRevocableProxy(iframe);
-    iframe = proxy;
+    const { target, revoke } = solutionModule.createMembrane(iframe);
+    iframe = target;
     proxyRevokeFns.add(revoke);
   }
   console.log(`Running scenario ${scenarioDropdown.value} - ${runCount}...`);
