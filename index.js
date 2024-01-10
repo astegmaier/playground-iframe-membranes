@@ -2,6 +2,7 @@ import { getTrackedIframe } from "./helpers/getTrackedIframe.js";
 import { initializeFinalizationRegistry } from "./helpers/initializeFinalizationRegistry.js";
 import { updateRunStatus } from "./helpers/updateRunStatus.js";
 import { updateScenarioDescription } from "./helpers/updateScenarioDescription.js";
+import { updateSolutionDescription } from "./helpers/updateSolutionDescription.js";
 
 //////////////////////
 // Initialize State //
@@ -13,7 +14,9 @@ window.finalizationRegistry = initializeFinalizationRegistry();
 
 // The HTML form controls are the "source of truth" for our app's state.
 const scenarioDropdown = /** @type {HTMLSelectElement} */ (document.getElementById("scenario"));
+const solutionDropdown = /** @type {HTMLSelectElement} */ (document.getElementById("solution"));
 const validScenarios = new Set(Array.from(scenarioDropdown.options).map((option) => option.value));
+const validSolutions = new Set(Array.from(solutionDropdown.options).map((option) => option.value));
 const continuousGcCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("enable-continuous-garbage-collection"));
 const applyProxyCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("apply-proxy-checkbox"));
 
@@ -22,6 +25,8 @@ function trySetStateFromQuery() {
   const searchParams = new URLSearchParams(window.location.search);
   const scenarioId = searchParams.get("scenario");
   scenarioDropdown.value = validScenarios.has(scenarioId) ? scenarioId : scenarioDropdown.options[0].value;
+  const solutionId = searchParams.get("solution");
+  solutionDropdown.value = validSolutions.has(solutionId) ? solutionId : solutionDropdown.options[0].value;
   const applyProxy = searchParams.get("applyProxy");
   applyProxyCheckbox.checked = applyProxy?.toLowerCase() === "true" ? true : false;
   // TODO: maybe we should refactor the way we're storing state to avoid duplicating this code with the applyProxyCheckbox.onchange handler.
@@ -33,6 +38,7 @@ function trySetStateFromQuery() {
 }
 trySetStateFromQuery();
 updateScenarioDescription(scenarioDropdown.value);
+updateSolutionDescription(solutionDropdown.value);
 
 // Changes to the controls where the state is stored should be reflected in the url and the app UI (and vice versa).
 scenarioDropdown.onchange = () => {
@@ -40,6 +46,15 @@ scenarioDropdown.onchange = () => {
   url.searchParams.set("scenario", scenarioDropdown.value);
   history.pushState({}, "", url);
   updateScenarioDescription(scenarioDropdown.value);
+  resetRuns();
+  updateUsedJsHeapSize();
+};
+
+solutionDropdown.onchange = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.set("solution", solutionDropdown.value);
+  history.pushState({}, "", url);
+  updateSolutionDescription(solutionDropdown.value);
   resetRuns();
   updateUsedJsHeapSize();
 };
@@ -58,18 +73,10 @@ applyProxyCheckbox.onchange = () => {
 window.addEventListener("popstate", () => {
   trySetStateFromQuery();
   updateScenarioDescription(scenarioDropdown.value);
+  updateSolutionDescription(solutionDropdown.value);
   resetRuns();
   updateUsedJsHeapSize();
 });
-
-// Display the proxy "solution" code.
-fetch(`./solution.js`)
-  .then((response) => response.text())
-  .then((code) => {
-    const iframeCodeContainer = document.getElementById("code-solution");
-    iframeCodeContainer.textContent = code;
-    hljs.highlightElement(iframeCodeContainer);
-  });
 
 // Display javascript heap size, if possible, and keep it up-to-date.
 async function updateUsedJsHeapSize() {

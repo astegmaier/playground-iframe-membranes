@@ -136,16 +136,20 @@
       </ul>
       <hr />
       <h2>Proof-of-Concept Membrane</h2>
-      <p>
-        The code below implements a proof-of-concept of a recursive "membrane" revokable proxy that can be applied to the contentWindow of a
-        same-domain iframe.
-      </p>
+      <div class="form-floating mb-3">
+        <select class="form-select" id="solution" aria-label="Select a solution">
+          <option value="1-baseline" selected>Solution 1 - Baseline</option>
+          <option value="2-store-revoke-in-weakrefs">Solution 2 - Storing Revoke Functions with Weak References</option>
+        </select>
+        <label for="solution">Select a Solution</label>
+      </div>
+      <div id="solution-description"></div>
       <pre><code class="language-javascript" id="code-solution"></code></pre>
       <hr />
       <h2>Test Scenarios</h2>
       <div class="form-floating mb-3">
         <select class="form-select" id="scenario" aria-label="Select a scenario">
-          <option value="1-leak-iframe-object">Scenario 1 - Leaking An Iframe Realm Object in the Main Window Realm</option>
+          <option value="1-leak-iframe-object" selected>Scenario 1 - Leaking An Iframe Realm Object in the Main Window Realm</option>
           <option value="2-leak-iframe">Scenario 2 - Leaking An Iframe Directly</option>
           <option value="3-object-equality">Scenario 3 - Preserving Object Equality Across the Membrane</option>
         </select>

@@ -1,0 +1,1 @@
+The code below implements a basic recursive proxy around the contentWindow of a same-domain iframe. It is a good starting point for a more robust solution, but it doesn't handle the distinction between iframe-to-main-window proxies and main-window-to-iframe proxies, among other things.
