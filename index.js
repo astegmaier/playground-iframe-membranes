@@ -71,6 +71,7 @@ applyMembraneCheckbox.onchange = () => {
   }
 };
 
+// Hitting "back" and "forward" buttons should update the app UI.
 window.addEventListener("popstate", () => {
   trySetStateFromQuery();
   updateScenarioDescription(scenarioDropdown.value);
