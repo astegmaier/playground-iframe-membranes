@@ -13,7 +13,13 @@ declare global {
     function highlightElement(element: HTMLElement): void;
   }
   namespace ts {
-    function transpileModule(code: string, options: { compilerOptions: { module: ModuleKind } }): { outputText: string };
+    function transpileModule(
+      code: string,
+      options: {
+        fileName?: string;
+        compilerOptions: { module?: ModuleKind; inlineSources?: boolean; inlineSourceMap?: boolean; sourceRoot?: string };
+      }
+    ): { outputText: string };
     enum ModuleKind {
       None = 0,
       CommonJS = 1,
