@@ -116,7 +116,20 @@ document.getElementById("run-scenario").onclick = async () => {
     membraneRevokeFns.add(revoke);
   }
   console.log(`Running scenario ${scenarioDropdown.value} - ${runCount}...`);
+
   await scenarioModule.runScenario(iframe);
+};
+
+document.getElementById("run-console-tests").onclick = async () => {
+  const utModule = await import(`./tests/equalityTests/index.js`);
+  console.log(`Running console tests`);
+  const solutionModule = await import(`./solutions/${solutionDropdown.value}/index.js`);
+  try {
+    utModule.runTests(solutionModule.createMembrane);
+  } catch (e) {
+    console.error(e);
+  }
+  console.log(`Console tests completed`);
 };
 
 document.getElementById("remove-iframes").onclick = () => {

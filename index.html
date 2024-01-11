@@ -140,11 +140,13 @@
         <select class="form-select" id="solution" aria-label="Select a solution">
           <option value="1-baseline" selected>Solution 1 - Baseline</option>
           <option value="2-store-revoke-in-weakrefs">Solution 2 - Storing Revoke Functions with Weak References</option>
+          <option value="3-preserve-identity">Solution 3 - Preserving object identity across the membrane using WeakMap</option>
         </select>
         <label for="solution">Select a Solution</label>
       </div>
       <div id="solution-description"></div>
       <pre><code class="language-javascript" id="code-solution"></code></pre>
+      <button class="btn btn-primary" id="run-console-tests">Run automated tests in console</button>
       <hr />
       <h2>Test Scenarios</h2>
       <div class="form-floating mb-3">
