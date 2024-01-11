@@ -102,7 +102,7 @@
       <p class="lead">
         This project is a proof-of-concept of an idea about how to isolate sourceless/same-domain iframes by using
         <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/revocable"
-          >revokable proxies</a
+          >revocable proxies</a
         >
         to build a <a href="https://tvcutsem.github.io/js-membranes">membrane</a> around the iframe realm.
       </p>
@@ -114,7 +114,7 @@
       <p>
         In this project, we are attempting to solve this problem by building a "membrane" that intercepts communication
         between iframe code and main window code with proxies. When objects from the iframe pass over the membrane, they
-        are replaced with a revokable proxy. This enables us to cleanly break all retainers between the iframe and the
+        are replaced with a revocable proxy. This enables us to cleanly break all retainers between the iframe and the
         main window when it is removed, which should (if implemented comprehensively) completely eliminate the chance of
         iframe realm memory leaks.
       </p>
@@ -128,7 +128,7 @@
       </h2>
       <p>
         The concept of a "membrane" was popularized in the JavaScript context by Tom Van Cutsem, who was one of the
-        intellectual forces behind the design of the Reflect, Proxy, and Proxy.revokable APIs in JavaScript.
+        intellectual forces behind the design of the Reflect, Proxy, and Proxy.revocable APIs in JavaScript.
       </p>
       <ul>
         <li>
@@ -164,7 +164,7 @@
         </li>
         <li>
           <a href="https://github.com/tc39/proposal-mass-proxy-revocation">Mass Proxy Revocation</a> - a Stage 1
-          proposal that is targeted at the "revokable membrane" scenario.
+          proposal that is targeted at the "revocable membrane" scenario.
         </li>
         <li>
           <a
@@ -183,6 +183,16 @@
         <select class="form-select" id="solution" aria-label="Select a solution">
           <option value="1-baseline" selected>Solution 1 - Baseline</option>
           <option value="2-store-revoke-in-weakrefs">Solution 2 - Storing Revoke Functions with Weak References</option>
+          <option value="3-harmony-reflect-example">
+            Solution 3 - Example Membrane by Tom Van Cutsem from harmony-reflect
+          </option>
+          <option value="4-harmony-reflect-example-revocable">
+            Solution 4 - Example Membrane by Tom Van Cutsem from harmony-reflect, with Proxy.revocable
+          </option>
+          <option value="5-tc39-unit-test-example">Solution 5 - Example Membrane from TC39 Unit Tests</option>
+          <option value="6-tc39-unit-test-example-revocable">
+            Solution 6 - Example Membrane from TC39 Unit Tests, with Proxy.revocable
+          </option>
         </select>
         <label for="solution">Select a Solution</label>
       </div>
