@@ -46,6 +46,8 @@ declare global {
   interface Performance {
     memory?: { usedJSHeapSize?: number; totalJSHeapSize?: number; jsHeapSizeLimit?: number };
   }
+
+  type CreateMembraneFunction = <T extends object>(target: T) => { membrane: T; revoke?: () => void };
 }
 
 // This is necessary to make typescript tread this d.ts file as a module, rather than a global file.

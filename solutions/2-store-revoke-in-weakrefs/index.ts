@@ -1,4 +1,4 @@
-export function createMembrane(target: object) {
+export const createMembrane: CreateMembraneFunction = (target) => {
   const revokeFnsCache = new RevokeFnsCache();
   const proxy = createRevocableProxy(target, revokeFnsCache);
   return {
@@ -8,7 +8,7 @@ export function createMembrane(target: object) {
       revokeFnsCache.revokeAll();
     },
   };
-}
+};
 
 function createRevocableProxy<T extends object>(target: T, revokeFnsCache: RevokeFnsCache) {
   const { proxy, revoke }: { proxy: T; revoke: () => void } = Proxy.revocable<T>(target, {
