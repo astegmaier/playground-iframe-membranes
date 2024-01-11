@@ -1,5 +1,10 @@
 importScripts("https://cdnjs.cloudflare.com/ajax/libs/typescript/5.3.3/typescript.min.js");
 
+/**
+ * This worker receives requests from the main thread to transpile typescript file located at a particular URL, and sends back the transpiled javascript.
+ * Request data: string containing the URL of the typescript file to transpile (relative to the web worker's location).
+ * Response data: { scriptUrl: string, transpiledCode: string } or { scriptUrl: string, error: string }.
+ */
 onmessage = async (e) => {
   const scriptUrl = e.data;
   try {
