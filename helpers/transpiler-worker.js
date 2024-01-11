@@ -13,7 +13,12 @@ onmessage = async (e) => {
     const absoluteScriptUrl = new URL(scriptUrl, location.href).href;
     const output = ts.transpileModule(tsCode, {
       fileName: absoluteScriptUrl,
-      compilerOptions: { module: ts.ModuleKind.ES2022, inlineSourceMap: true, inlineSources: true, sourceRoot: absoluteScriptUrl },
+      compilerOptions: {
+        module: ts.ModuleKind.ES2022,
+        inlineSourceMap: true,
+        inlineSources: true,
+        sourceRoot: absoluteScriptUrl,
+      },
     });
     postMessage({ scriptUrl, transpiledCode: output.outputText });
   } catch (e) {

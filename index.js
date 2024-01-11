@@ -18,7 +18,7 @@ const scenarioDropdown = /** @type {HTMLSelectElement} */ (document.getElementBy
 const solutionDropdown = /** @type {HTMLSelectElement} */ (document.getElementById("solution"));
 const validScenarios = new Set(Array.from(scenarioDropdown.options).map((option) => option.value));
 const validSolutions = new Set(Array.from(solutionDropdown.options).map((option) => option.value));
-const continuousGcCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("enable-continuous-garbage-collection"));
+const continuousGcCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("continuous-garbage-collection"));
 const applyMembraneCheckbox = /** @type {HTMLInputElement} */ (document.getElementById("apply-membrane-checkbox"));
 
 // Set the initial state from the url, if possible.
@@ -38,8 +38,18 @@ function trySetStateFromQuery() {
   }
 }
 trySetStateFromQuery();
-updateScenarioDescription(scenarioDropdown.value);
-updateSolutionDescription(solutionDropdown.value);
+
+// Load scenario and solution descriptions, then scroll the appropriate section into view when that is complete.
+function scrollToAnchors() {
+  const targetId = location.hash?.slice(1);
+  if (targetId) {
+    document.getElementById(targetId)?.scrollIntoView(true);
+  }
+}
+Promise.all([
+  updateScenarioDescription(scenarioDropdown.value),
+  updateSolutionDescription(solutionDropdown.value),
+]).then(scrollToAnchors);
 
 // Changes to the controls where the state is stored should be reflected in the url and the app UI (and vice versa).
 scenarioDropdown.onchange = () => {
@@ -102,7 +112,9 @@ if (window.gc) {
 }
 
 // Pre-transpile and import all the 'solution' scripts so they are available when needed.
-const solutionModules = getTranspiledModules(Array.from(validSolutions).map((solutionId) => `../solutions/${solutionId}/index.ts`)); // these URLs are relative to the web worker that will eventually use them (transpiler-worker.js).
+const solutionModules = getTranspiledModules(
+  Array.from(validSolutions).map((solutionId) => `../solutions/${solutionId}/index.ts`) // these URLs are relative to the web worker that will eventually use them (transpiler-worker.js).
+);
 
 ///////////////////////////
 // Set up Click Handlers //
@@ -110,9 +122,13 @@ const solutionModules = getTranspiledModules(Array.from(validSolutions).map((sol
 
 const membraneRevokeFns = new Set();
 
-document.getElementById("run-scenario").onclick = async () => {
+document.getElementById("run-scenario-button").onclick = async () => {
   const scenarioModule = await import(`./scenarios/${scenarioDropdown.value}/index.js`);
-  let iframe = await getTrackedIframe(`./scenarios/${scenarioDropdown.value}/iframe.js`, ++runCount, window.finalizationRegistry);
+  let iframe = await getTrackedIframe(
+    `./scenarios/${scenarioDropdown.value}/iframe.js`,
+    ++runCount,
+    window.finalizationRegistry
+  );
   if (applyMembraneCheckbox.checked) {
     console.log(`Applying membrane solution ${solutionDropdown.value}...`);
     const solutionModule = await solutionModules[`../solutions/${solutionDropdown.value}/index.ts`];
@@ -160,6 +176,6 @@ document.getElementById("collect-garbage").onclick = async () => {
   }
 };
 
-document.getElementById("enable-continuous-garbage-collection-info-button").onclick = () => {
+document.getElementById("continuous-garbage-collection-info-button").onclick = () => {
   gcFlagsModal.show();
 };

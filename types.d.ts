@@ -17,7 +17,12 @@ declare global {
       code: string,
       options: {
         fileName?: string;
-        compilerOptions: { module?: ModuleKind; inlineSources?: boolean; inlineSourceMap?: boolean; sourceRoot?: string };
+        compilerOptions: {
+          module?: ModuleKind;
+          inlineSources?: boolean;
+          inlineSourceMap?: boolean;
+          sourceRoot?: string;
+        };
       }
     ): { outputText: string };
     enum ModuleKind {
