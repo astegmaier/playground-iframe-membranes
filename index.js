@@ -101,7 +101,7 @@ if (window.gc) {
 }
 
 // Pre-transpile and import all the 'solution' scripts so they are available when needed.
-const solutionModules = getTranspiledModules(Array.from(validSolutions).map((solutionId) => `../solutions/${solutionId}/index.ts`));
+const solutionModules = getTranspiledModules(Array.from(validSolutions).map((solutionId) => `../solutions/${solutionId}/index.ts`)); // these URLs are relative to the web worker that will eventually use them (transpiler-worker.js).
 
 ///////////////////////////
 // Set up Click Handlers //
