@@ -4,6 +4,6 @@ This solution is considerably more complex. One of the reasons is that Vincent h
 
 ![Proxy-to-a-Proxy Scenario](./solutions/7-es-membrane-example/proxy-to-a-proxy.png);
 
-In this situation, Bob's realm would loose access to the DOM object if Alice's realm got revoked. However, this might be acceptable in scenarios where membranes don't interact with each other very much, or get revoked independently. It is unclear to me at this point if there are other function or performance problems that would follow from this proxy-to-a-proxy structure.
+In this situation, Bob's realm would loose access to the DOM object if Alice's realm got revoked. Another problem is that, from Bob's perspective `dp !== dpp`, which could cause unpredictable and hard-to-debug problems. However, this might be acceptable in scenarios where membranes don't interact with each other very much, or get revoked independently. It is unclear to me at this point if there are other function or performance problems that would follow from this proxy-to-a-proxy structure.
 
 Despite this complexity, there still might be some useful learnings here, because he seems to have investigated the nitty-gritty details of implementing membranes in JavaScript more than anyone else.
