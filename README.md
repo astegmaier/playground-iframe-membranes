@@ -12,6 +12,7 @@ For more details [see it running live](https://astegmaier.github.io/playground-i
 
 1. Clone this repo by running `git clone https://github.com/astegmaier/playground-iframe-membranes.git`
 2. Change into the directory by running `cd playground-iframe-membranes`
-3. Ensure [nodejs](https://nodejs.org/en/) is installed.
-4. Run `npx http-server` to start a local server. You can also install `http-server` globally by running `npm install -g http-server` and then running `http-server` directly.
-5. Open `http://localhost:8080/` in your browser.
+3. Ensure [nodejs](https://nodejs.org/en/) and [yarn classic](https://classic.yarnpkg.com/en/docs) is installed.
+4. Install dependencies by running `yarn`.
+5. Run `yarn start`.
+6. Open `http://localhost:8080/` in your browser.
