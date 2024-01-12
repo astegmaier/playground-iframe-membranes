@@ -18,7 +18,7 @@ export function createMembrane(wetTarget) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // The code below was copied from the es-membrane repo                                                   //
 // See: https://github.com/ajvincent/es-membrane/blob/master/old-0.9/docs/dist/browser/es-membrane.js    //
-// TThe license below appears to allow us to use it (if we want to), as long as we include the copyright //
+// The license below appears to allow us to use it (if we want to), as long as we include the copyright. //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ISC License (ISC)
