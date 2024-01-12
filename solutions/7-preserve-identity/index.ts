@@ -21,22 +21,51 @@ function createRevocableProxy<T extends object>(
     // Return the proxy if it already exists.
     if (proxyIdentityCache.get(target, direction)) return proxyIdentityCache.get(target, direction);
     const flippedDirection = proxyIdentityCache.flipDirection(direction);
-    // create the proxy recursively
-    const { proxy, revoke } = Proxy.revocable(target, {
-      get(target, name) {
-        return wrapper(Reflect.get(target, name), direction);
-      },
-      apply(target, thisArg, argArray) {
-        return wrapper(
-          Reflect.apply(
-            target,
-            wrapper(thisArg, flippedDirection),
-            argArray.map((arg) => wrapper(arg, flippedDirection))
-          ),
-          direction
-        );
-      },
-    });
+
+    // Create a proxy object that will forward all of the traps to a single function.
+    const proxyHandler = new Proxy(
+      {},
+      {
+        get(_, name: keyof ProxyHandler<T>) {
+          // Create a function that will wrap errors thrown by handlers in the correct direction.
+          function handleErrors(handler: (...args: any[]) => any) {
+            return (...args: any[]) => {
+              try {
+                return handler(...args);
+              } catch (e: any) {
+                throw wrapper(direction, e);
+              }
+            };
+          }
+          switch (name) {
+            case "get":
+              return handleErrors((_handlerTarget: unknown, name: string) =>
+                wrapper(Reflect.get(target, name), direction)
+              );
+            case "apply":
+              return handleErrors((_handlerTarget: unknown, thisArg: any, argArray: any[]) =>
+                wrapper(
+                  Reflect.apply(
+                    target,
+                    wrapper(thisArg, flippedDirection),
+                    argArray.map((arg) => wrapper(arg, flippedDirection))
+                  ),
+                  direction
+                )
+              );
+            default:
+              return handleErrors((_handlerTarget: unknown, ...args: any[]) => {
+                return wrapper(
+                  // Call signatures don't match, so we cast Reflect as Any, but name is a keyof ProxyHandler<T> so it will always be reflectable
+                  (Reflect as any)[name](target, ...args.map((arg) => wrapper(arg, flippedDirection))),
+                  direction
+                );
+              });
+          }
+        },
+      }
+    );
+    const { proxy, revoke } = Proxy.revocable(target, proxyHandler);
     proxyIdentityCache.add(target, proxy, direction);
     revokeFnsCache.add(proxy, revoke);
     return proxy;
