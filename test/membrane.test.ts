@@ -81,8 +81,7 @@ describe.each([
         // membrane works for configurable properties
         const wetA = { x: 1 };
         const wetB = { y: wetA };
-        const { membrane, revoke } = createMembrane(wetB);
-        const dryB = membrane;
+        const { membrane: dryB, revoke } = createMembrane(wetB);
         const dryA = dryB.y;
         expect(wetA).not.toBe(dryA);
         expect(wetB).not.toBe(dryB);
@@ -97,8 +96,7 @@ describe.each([
 
       test("functions are wrapped", () => {
         const wetA = (x: unknown) => x;
-        const { membrane, revoke } = createMembrane(wetA);
-        const dryA = membrane;
+        const { membrane: dryA, revoke } = createMembrane(wetA);
 
         expect(wetA).not.toBe(dryA);
         expect(wetA(1)).toBe(1);
@@ -116,11 +114,10 @@ describe.each([
             return wetA;
           },
         };
-        const { membrane, revoke } = createMembrane(wetB);
+        const { membrane: dryB, revoke } = createMembrane(wetB);
         expect(wetA.x).toBe(42);
         expect(wetB.m().x).toBe(42);
 
-        const dryB = membrane;
         const dryA = dryB.m();
 
         expect(wetA).not.toBe(dryA);
@@ -140,8 +137,7 @@ describe.each([
 
         expect(Object.getPrototypeOf(wetB)).toBe(wetA);
 
-        const { membrane, revoke } = createMembrane(wetB);
-        const dryB = membrane;
+        const { membrane: dryB, revoke } = createMembrane(wetB);
         const dryA = Object.getPrototypeOf(dryB);
 
         expect(wetA).not.toBe(dryA);
@@ -166,8 +162,7 @@ describe.each([
           rex: /x/,
           dat: new Date(),
         };
-        const { membrane } = createMembrane(wetA);
-        const dryA = membrane;
+        const { membrane: dryA } = createMembrane(wetA);
 
         Object.keys(wetA).forEach(function (name) {
           expect(typeof wetA[name]).toBe(typeof dryA[name]);
@@ -182,8 +177,7 @@ describe.each([
         expect(wetA.x).toBe(1);
         expect(Object.getOwnPropertyDescriptor(wetA, "x").configurable).toBe(false);
 
-        const { membrane } = createMembrane(wetA);
-        const dryA = membrane;
+        const { membrane: dryA } = createMembrane(wetA);
 
         // perhaps surprisingly, just reading out the property value works,
         // since no code has yet observed that 'x' is a non-configurable
@@ -204,8 +198,7 @@ describe.each([
         const wetA = Object.preventExtensions({ x: 1 });
         expect(Object.isExtensible(wetA)).toBe(false);
 
-        const { membrane } = createMembrane(wetA);
-        const dryA = membrane;
+        const { membrane: dryA } = createMembrane(wetA);
 
         expect(dryA.x).toBe(1);
 
@@ -242,8 +235,7 @@ describe.each([
 
       test("definition of a new non-configurable property on a membrane", () => {
         const wetA: { x?: number } = {};
-        const { membrane } = createMembrane(wetA);
-        const dryA = membrane;
+        const { membrane: dryA } = createMembrane(wetA);
 
         // membranes should allow definition of non-configurable props
         Object.defineProperty(dryA, "x", { value: 1, writable: true, enumerable: true, configurable: false });
@@ -254,8 +246,7 @@ describe.each([
       test("a membrane preserves object identity", () => {
         const wetA = {};
         const wetB = { x: wetA };
-        const { membrane } = createMembrane(wetB);
-        const dryB = membrane;
+        const { membrane: dryB } = createMembrane(wetB);
 
         const dryA1 = dryB.x;
         const dryA2 = dryB.x;
@@ -270,8 +261,7 @@ describe.each([
           },
         } as const;
 
-        const { membrane } = createMembrane(wetA);
-        const dryA = membrane;
+        const { membrane: dryA } = createMembrane(wetA);
         const dryB = dryA.out;
         const dryC = {};
 
@@ -287,15 +277,13 @@ describe.each([
 
       test("a membrane handles Date objects", () => {
         const wetDate = new Date();
-        const { membrane } = createMembrane(wetDate);
-        const dryDate = membrane;
+        const { membrane: dryDate } = createMembrane(wetDate);
         expect(typeof dryDate.getTime()).toBe("number");
       });
 
       test("a membrane handles has and delete operations", () => {
         const wetA = { x: 0 };
-        const { membrane } = createMembrane(wetA);
-        const dryA = membrane;
+        const { membrane: dryA } = createMembrane(wetA);
 
         expect("x" in dryA).toBe(true);
         // TODO: the original test had this line, but "Reflect.hasOwn" didn't seem to have made it into the ECMA standard.
@@ -315,10 +303,9 @@ describe.each([
 
       test("a membrane handles Object.keys", () => {
         const wetA = { x: 0, y: 0 };
-        const { membrane } = createMembrane(wetA);
-        const dryA = membrane;
+        const { membrane: dryA } = createMembrane(wetA);
 
-        var dryKeys = Object.keys(dryA);
+        const dryKeys = Object.keys(dryA);
         expect(dryKeys.length).toBe(2);
       });
     });
@@ -388,8 +375,7 @@ describe.each([
           },
         };
         o[2] = { c: 7 };
-        const { membrane, revoke } = createMembrane(o);
-        const w = membrane;
+        const { membrane: w, revoke } = createMembrane(o);
         const f = w.f;
         // TODO: what's up with the multiple 'var x =' lines here?
         var x = f(66);
@@ -422,15 +408,15 @@ describe.each([
         expect(5).toEqual(w.s(5).x.y);
         expect(o).toBe(receiver);
 
-        var wb = w.b;
-        var wr = w.r;
-        var wf = w.f;
-        var wf3 = w.f(3);
-        var wfx = w.f({ a: 6 });
-        var wgx = w.g({ a: { aa: 7 } });
-        var wh4 = new w.h(4);
-        var ws5 = w.s(5);
-        var ws5x = ws5.x;
+        const wb = w.b;
+        const wr = w.r;
+        const wf = w.f;
+        const wf3 = w.f(3);
+        const wfx = w.f({ a: 6 });
+        const wgx = w.g({ a: { aa: 7 } });
+        const wh4 = new w.h(4);
+        const ws5 = w.s(5);
+        const ws5x = ws5.x;
 
         revoke();
 
