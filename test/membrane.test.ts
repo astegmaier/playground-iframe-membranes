@@ -2,11 +2,13 @@ import { createMembrane as baseline } from "../solutions/1-baseline/index";
 import { createMembrane as withRevoke } from "../solutions/2-store-revoke-in-weakrefs/index";
 import { createMembrane as harmonyExample } from "../solutions/3-harmony-reflect-example/index";
 import { createMembrane as tc39Example } from "../solutions/5-tc39-unit-test-example/index";
+import { createMembrane as preserveIdentity } from "../solutions/7-preserve-identity/index";
 describe.each([
   ["baseline", baseline],
   ["with revoke", withRevoke],
   ["harmony-reflect example", harmonyExample],
   ["tc39 unit test example", tc39Example],
+  ["preserve identity", preserveIdentity],
 ])("Membrane %s", (_, createMembrane: CreateMembraneFunction) => {
   describe("nested equality", () => {
     let bazSpy: any;
