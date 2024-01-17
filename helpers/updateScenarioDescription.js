@@ -1,3 +1,13 @@
+// const renderer = new marked.Renderer();
+// renderer.code = function (code, language) {
+//   if (code.match(/^sequenceDiagram/) || code.match(/^graph/)) {
+//     return '<pre class="mermaid">' + code + "</pre>";
+//   } else {
+//     return "<pre><code>" + code + "</code></pre>";
+//   }
+// };
+// marked.use(renderer);
+
 /**
  * Updates the UI in the app that describes the scenario and displays the code that will run inside the iframe and the main page.
  * @param {string} scenarioId String identifying the scenario. These should correspond to folders inside the "scenarios" folder.
@@ -22,6 +32,21 @@ export async function updateScenarioDescription(scenarioId) {
       }),
     fetch(`./scenarios/${scenarioId}/index.md`)
       .then((response) => response.text())
-      .then((markdown) => (document.getElementById("scenario-description").innerHTML = marked.parse(markdown))),
+      .then((markdown) => (document.getElementById("scenario-description").innerHTML = marked.parse(markdown)))
+      .then(async () => {
+        const codeElements = /** @type {NodeListOf<HTMLElement>} */ (
+          document.getElementById("solution-description").querySelectorAll(".language-typescript, .language-javascript")
+        );
+        codeElements.forEach((codeElement) => {
+          delete codeElement.dataset.highlighted;
+          hljs.highlightElement(codeElement);
+        });
+        const mermaidElements = /** @type {NodeListOf<HTMLElement>} */ (
+          document.getElementById("solution-description").querySelectorAll(".language-mermaid")
+        );
+        if (mermaidElements.length === 0) return;
+        mermaidElements.forEach((mermaidElement) => mermaidElement.classList.add("mermaid"));
+        await mermaid.run();
+      }),
   ]);
 }
