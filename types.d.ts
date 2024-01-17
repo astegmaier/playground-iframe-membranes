@@ -12,6 +12,44 @@ declare global {
   namespace hljs {
     function highlightElement(element: HTMLElement): void;
   }
+  namespace mermaid {
+    interface RunOptions {
+      /**
+       * The query selector to use when finding elements to render. Default: `".mermaid"`.
+       */
+      querySelector?: string;
+      /**
+       * The nodes to render. If this is set, `querySelector` will be ignored.
+       */
+      nodes?: ArrayLike<HTMLElement>;
+      /**
+       * A callback to call after each diagram is rendered.
+       */
+      postRenderCallback?: (id: string) => unknown;
+      /**
+       * If `true`, errors will be logged to the console, but not thrown. Default: `false`
+       */
+      suppressErrors?: boolean;
+    }
+
+    /**
+     * Function that goes through the document to find the chart definitions in there and render them.
+     *
+     * The function tags the processed attributes with the attribute data-processed and ignores found
+     * elements with the attribute already set. This way the init function can be triggered several
+     * times.
+     *
+     * ```mermaid
+     * graph LR;
+     *  a(Find elements)-->b{Processed}
+     *  b-->|Yes|c(Leave element)
+     *  b-->|No |d(Transform)
+     * ```
+     *
+     * @param options - Optional runtime configs
+     */
+    function run(options?: RunOptions): Promise<void>;
+  }
   namespace ts {
     function transpileModule(
       code: string,
