@@ -2,7 +2,7 @@
 
 // This is a function I (ansteg) wrote to adapt the es-membrane interface to our test app.
 export function createMembrane(wetTarget) {
-  const membrane = new Membrane();
+  const membrane = new Membrane({ showGraphName: true });
   const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
   const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
   const proxy = membrane.convertArgumentToProxy(wetHandler, dryHandler, wetTarget);

@@ -3,7 +3,7 @@ import { createMembrane as withRevoke } from "../solutions/2-store-revoke-in-wea
 import { createMembrane as harmonyExample } from "../solutions/3-harmony-reflect-example/index";
 import { createMembrane as tc39Example } from "../solutions/5-tc39-unit-test-example/index";
 import { createMembrane as esMembraneExample } from "../solutions/7-es-membrane-example/index";
-import { getWetEnvironment } from "./es-membrane-mocks";
+import { MembraneMocks } from "./es-membrane-node-mocks";
 
 describe.each([
   ["baseline", baseline],
@@ -469,20 +469,33 @@ describe.each([
 
     describe("es-membrane tests", () => {
       /** We want to adapt tests that were written for es-membrane to our more generic createMembrane function. */
-      class MockMembrane {
+      class MockEsMembrane {
         getMembraneValue() {
           // TODO: implement this.
           // We'll probably need to publicly expose the membrane's internals to do this. Is it worth it?
         }
-        getMembraneProxy() {} // TODO: implement this.
+        getMembraneProxy() {
+          // TODO: implement this.
+        }
       }
       describe("basic concepts", () => {
-        let wetDocument: any, dryDocument: any, membrane: MockMembrane;
+        let wetDocument: any, dryDocument: any, membrane: MockEsMembrane;
 
         beforeEach(function () {
-          wetDocument = getWetEnvironment().doc;
-          dryDocument = createMembrane(wetDocument).membrane;
-          membrane = new MockMembrane();
+          const parts = MembraneMocks();
+          wetDocument = parts.wet.doc;
+
+          // ansteg: This was originally "dryDocument = parts.dry.doc;"" We are modifying it to make it adaptable to our other implementations.
+          const createMembraneResult = createMembrane(wetDocument);
+          dryDocument = createMembraneResult.membrane;
+
+          // ansteg: We emulate the way that es-membrane does revoking - through dispatching an 'unload' event.
+          wetDocument.dispatchEvent = (eventName: string) => {
+            if (eventName === "unload") {
+              createMembraneResult.revoke();
+            }
+          };
+          membrane = new MockEsMembrane();
         });
 
         afterEach(function () {
@@ -1219,9 +1232,12 @@ describe.each([
           wetObj.alpha._upper = wetObj.ALPHA;
           wetObj.beta._upper = wetObj.BETA;
 
-          // TODO: figure out how to make this work.
+          // ansteg: this was originally:
           // let parts = MembraneMocks();
           // dryObj = parts.membrane.convertArgumentToProxy(parts.handlers.wet, parts.handlers.dry, wetObj);
+
+          // We are modifying it to make it adaptable to our other implementations beyond es-membrane:
+          dryObj = createMembrane(wetObj).membrane;
         });
 
         it("are where property lookups happen", function () {
