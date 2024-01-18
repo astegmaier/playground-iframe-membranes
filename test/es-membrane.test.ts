@@ -483,159 +483,158 @@ describe.each(membranes)("es-membrane tests --> %s membrane", (_, createMembrane
       expect(wetDocument.location.membraneGraphName === "wet").toBe(true);
     });
 
-    // it("Setting a prototype works as expected", function () {
-    //   const logger = loggerLib.getLogger("test.membrane.setPrototypeOf");
-    //   let wetRoot, ElementWet, NodeWet;
-    //   let dryRoot, ElementDry, NodeDry;
+    it("Setting a prototype works as expected", function () {
+      let wetRoot: any, ElementWet: any, NodeWet: any;
+      let dryRoot: any, ElementDry: any, NodeDry: any;
 
-    //   let parts = MembraneMocks(createMembrane, false, logger);
-    //   wetRoot = parts.wet.doc.rootElement;
-    //   ElementWet = parts.wet.Element;
-    //   NodeWet = parts.wet.Node;
-    //   parts.wet.root = wetRoot;
+      let parts: any = MembraneMocks(createMembrane, false);
+      wetRoot = parts.wet.doc.rootElement;
+      ElementWet = parts.wet.Element;
+      NodeWet = parts.wet.Node;
+      parts.wet.root = wetRoot;
 
-    //   dryRoot = parts.dry.doc.rootElement;
-    //   ElementDry = parts.dry.Element;
-    //   NodeDry = parts.dry.Node;
-    //   parts.dry.root = dryRoot;
+      dryRoot = parts.dry.doc.rootElement;
+      ElementDry = parts.dry.Element;
+      NodeDry = parts.dry.Node;
+      parts.dry.root = dryRoot;
 
-    //   let XHTMLElementDryProto = {
-    //     namespaceURI: "http://www.w3.org/1999/xhtml",
-    //   };
-    //   let eProto = ElementDry.prototype;
+      let XHTMLElementDryProto = {
+        namespaceURI: "http://www.w3.org/1999/xhtml",
+      };
+      let eProto = ElementDry.prototype;
 
-    //   const traceMap = new Map(/* value: name */);
-    //   {
-    //     traceMap.addMember = function (value, name) {
-    //       if (!this.has(value)) this.set(value, name);
-    //       if (typeof value === "function" && !this.has(value.prototype)) this.set(value.prototype, name + ".prototype");
-    //     };
+      const traceMap: any = new Map(/* value: name */);
+      {
+        traceMap.addMember = function (value: any, name: any) {
+          if (!this.has(value)) this.set(value, name);
+          if (typeof value === "function" && !this.has(value.prototype)) this.set(value.prototype, name + ".prototype");
+        };
 
-    //     {
-    //       let keys = Reflect.ownKeys(parts.wet);
-    //       keys.forEach(function (key) {
-    //         let value = this[key];
-    //         traceMap.addMember(value, "parts.wet." + key);
-    //       }, parts.wet);
+        {
+          let keys = Reflect.ownKeys(parts.wet);
+          keys.forEach(function (this: any, key: any) {
+            let value = this[key];
+            traceMap.addMember(value, "parts.wet." + key);
+          }, parts.wet);
 
-    //       traceMap.addMember(Reflect.getPrototypeOf(parts.wet.Node.prototype), "parts.wet.EventListener.prototype");
-    //     }
-    //     {
-    //       let keys = Reflect.ownKeys(parts.dry);
-    //       keys.forEach(function (key) {
-    //         let value = this[key];
-    //         traceMap.addMember(value, "parts.dry." + key);
-    //       }, parts.dry);
+          traceMap.addMember(Reflect.getPrototypeOf(parts.wet.Node.prototype), "parts.wet.EventListener.prototype");
+        }
+        {
+          let keys = Reflect.ownKeys(parts.dry);
+          keys.forEach(function (this: any, key: any) {
+            let value = this[key];
+            traceMap.addMember(value, "parts.dry." + key);
+          }, parts.dry);
 
-    //       traceMap.addMember(Reflect.getPrototypeOf(parts.dry.Node.prototype), "parts.dry.EventListener.prototype");
+          traceMap.addMember(Reflect.getPrototypeOf(parts.dry.Node.prototype), "parts.dry.EventListener.prototype");
 
-    //       traceMap.set(XHTMLElementDryProto, "XHTMLElementDryProto");
-    //     }
+          traceMap.set(XHTMLElementDryProto, "XHTMLElementDryProto");
+        }
 
-    //     traceMap.getPrototypeChain = function (value) {
-    //       var rv = [],
-    //         next;
-    //       while (value) {
-    //         next = this.get(value) || "(unknown)";
-    //         rv.push(next);
-    //         value = Reflect.getPrototypeOf(value);
-    //       }
-    //       return rv;
-    //     };
-    //   }
+        traceMap.getPrototypeChain = function (value: any) {
+          var rv = [],
+            next;
+          while (value) {
+            next = this.get(value) || "(unknown)";
+            rv.push(next);
+            value = Reflect.getPrototypeOf(value);
+          }
+          return rv;
+        };
+      }
 
-    //   {
-    //     let chain = traceMap.getPrototypeChain(parts.wet.root);
-    //     let expectedChain = [
-    //       "parts.wet.root",
-    //       "parts.wet.Element.prototype",
-    //       "parts.wet.Node.prototype",
-    //       "parts.wet.EventListener.prototype",
-    //       "(unknown)",
-    //     ];
-    //     expect(chain).toEqual(expectedChain);
-    //   }
+      {
+        let chain = traceMap.getPrototypeChain(parts.wet.root);
+        let expectedChain = [
+          "parts.wet.root",
+          "parts.wet.Element.prototype",
+          "parts.wet.Node.prototype",
+          "parts.wet.EventListener.prototype",
+          "(unknown)",
+        ];
+        expect(chain).toEqual(expectedChain);
+      }
 
-    //   {
-    //     let chain = traceMap.getPrototypeChain(parts.dry.root);
-    //     let expectedChain = [
-    //       "parts.dry.root",
-    //       "parts.dry.Element.prototype",
-    //       "parts.dry.Node.prototype",
-    //       "parts.dry.EventListener.prototype",
-    //       "(unknown)",
-    //     ];
-    //     expect(chain).toEqual(expectedChain);
-    //   }
+      {
+        let chain = traceMap.getPrototypeChain(parts.dry.root);
+        let expectedChain = [
+          "parts.dry.root",
+          "parts.dry.Element.prototype",
+          "parts.dry.Node.prototype",
+          "parts.dry.EventListener.prototype",
+          "(unknown)",
+        ];
+        expect(chain).toEqual(expectedChain);
+      }
 
-    //   expect(Reflect.setPrototypeOf(XHTMLElementDryProto, eProto)).toBe(true);
-    //   {
-    //     let chain = traceMap.getPrototypeChain(XHTMLElementDryProto);
-    //     let expectedChain = [
-    //       "XHTMLElementDryProto",
-    //       "parts.dry.Element.prototype",
-    //       "parts.dry.Node.prototype",
-    //       "parts.dry.EventListener.prototype",
-    //       "(unknown)",
-    //     ];
-    //     expect(chain).toEqual(expectedChain);
-    //   }
+      expect(Reflect.setPrototypeOf(XHTMLElementDryProto, eProto)).toBe(true);
+      {
+        let chain = traceMap.getPrototypeChain(XHTMLElementDryProto);
+        let expectedChain = [
+          "XHTMLElementDryProto",
+          "parts.dry.Element.prototype",
+          "parts.dry.Node.prototype",
+          "parts.dry.EventListener.prototype",
+          "(unknown)",
+        ];
+        expect(chain).toEqual(expectedChain);
+      }
 
-    //   expect(Reflect.setPrototypeOf(dryRoot, XHTMLElementDryProto)).toBe(true);
-    //   expect(Reflect.getPrototypeOf(dryRoot) === XHTMLElementDryProto).toBe(true);
-    //   {
-    //     let chain = traceMap.getPrototypeChain(parts.dry.root);
-    //     let expectedChain = [
-    //       "parts.dry.root",
-    //       "XHTMLElementDryProto",
-    //       "parts.dry.Element.prototype",
-    //       "parts.dry.Node.prototype",
-    //       "parts.dry.EventListener.prototype",
-    //       "(unknown)",
-    //     ];
-    //     expect(chain).toEqual(expectedChain);
-    //   }
+      expect(Reflect.setPrototypeOf(dryRoot, XHTMLElementDryProto)).toBe(true);
+      expect(Reflect.getPrototypeOf(dryRoot) === XHTMLElementDryProto).toBe(true);
+      {
+        let chain = traceMap.getPrototypeChain(parts.dry.root);
+        let expectedChain = [
+          "parts.dry.root",
+          "XHTMLElementDryProto",
+          "parts.dry.Element.prototype",
+          "parts.dry.Node.prototype",
+          "parts.dry.EventListener.prototype",
+          "(unknown)",
+        ];
+        expect(chain).toEqual(expectedChain);
+      }
 
-    //   {
-    //     let chain = traceMap.getPrototypeChain(parts.wet.root);
-    //     let expectedChain = [
-    //       "parts.wet.root",
-    //       "(unknown)",
-    //       "parts.wet.Element.prototype",
-    //       "parts.wet.Node.prototype",
-    //       "parts.wet.EventListener.prototype",
-    //       "(unknown)",
-    //     ];
-    //     expect(chain).toEqual(expectedChain);
-    //   }
+      {
+        let chain = traceMap.getPrototypeChain(parts.wet.root);
+        let expectedChain = [
+          "parts.wet.root",
+          "(unknown)",
+          "parts.wet.Element.prototype",
+          "parts.wet.Node.prototype",
+          "parts.wet.EventListener.prototype",
+          "(unknown)",
+        ];
+        expect(chain).toEqual(expectedChain);
+      }
 
-    //   expect(dryRoot.namespaceURI).toBe(XHTMLElementDryProto.namespaceURI);
-    //   expect(wetRoot.namespaceURI).toBe(XHTMLElementDryProto.namespaceURI);
+      expect(dryRoot.namespaceURI).toBe(XHTMLElementDryProto.namespaceURI);
+      expect(wetRoot.namespaceURI).toBe(XHTMLElementDryProto.namespaceURI);
 
-    //   let XHTMLElementDry = function (ownerDoc, name) {
-    //     // this takes care of ownerDoc, name
-    //     ElementDry.apply(this, [ownerDoc, name]);
-    //   };
-    //   XHTMLElementDry.prototype = XHTMLElementDryProto;
-    //   traceMap.addMember(XHTMLElementDry, "XHTMLElementDry");
+      let XHTMLElementDry: any = function (this: any, ownerDoc: any, name: any) {
+        // this takes care of ownerDoc, name
+        ElementDry.apply(this, [ownerDoc, name]);
+      };
+      XHTMLElementDry.prototype = XHTMLElementDryProto;
+      traceMap.addMember(XHTMLElementDry, "XHTMLElementDry");
 
-    //   let x = new XHTMLElementDry(dryDocument, "test");
-    //   traceMap.addMember(x, "x");
-    //   {
-    //     let chain = traceMap.getPrototypeChain(x);
-    //     let expectedChain = [
-    //       "x",
-    //       "XHTMLElementDryProto",
-    //       "parts.dry.Element.prototype",
-    //       "parts.dry.Node.prototype",
-    //       "parts.dry.EventListener.prototype",
-    //       "(unknown)",
-    //     ];
-    //     expect(chain).toEqual(expectedChain);
-    //   }
-    //   expect(x.namespaceURI).toBe(XHTMLElementDryProto.namespaceURI);
-    //   expect(x.nodeType).toBe(1);
-    // });
+      let x = new XHTMLElementDry(dryDocument, "test");
+      traceMap.addMember(x, "x");
+      {
+        let chain = traceMap.getPrototypeChain(x);
+        let expectedChain = [
+          "x",
+          "XHTMLElementDryProto",
+          "parts.dry.Element.prototype",
+          "parts.dry.Node.prototype",
+          "parts.dry.EventListener.prototype",
+          "(unknown)",
+        ];
+        expect(chain).toEqual(expectedChain);
+      }
+      expect(x.namespaceURI).toBe(XHTMLElementDryProto.namespaceURI);
+      expect(x.nodeType).toBe(1);
+    });
 
     it("Calling Object.preventExtensions(...) works as expected", function () {
       expect(Object.isExtensible(dryDocument)).toBe(true);
