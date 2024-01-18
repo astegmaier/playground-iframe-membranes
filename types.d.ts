@@ -86,6 +86,7 @@ declare global {
   }
 
   type CreateMembraneFunction = <T extends object>(target: T) => { membrane: T; revoke?: () => void };
+  var membranes: Array<[string, CreateMembraneFunction]>;
 }
 
 // This is necessary to make typescript tread this d.ts file as a module, rather than a global file.

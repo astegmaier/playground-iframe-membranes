@@ -16,3 +16,15 @@ For more details [see it running live](https://astegmaier.github.io/playground-i
 4. Install dependencies by running `yarn`.
 5. Run `yarn start`.
 6. Open `http://localhost:8080/` in your browser.
+
+
+## Running Unit tests
+Project uses [jest](https://jestjs.io/) to run unit tests.
+
+to execute, simply run `yarn test`
+
+Test suites are run against membrane implementations specified in the `.env` file. To run tests against a particular membrane or set of membranes, look for that solution's "number" in the file name, and add it to the `JEST_MEMBRANE` variable in the [.env](/.env) file.
+
+For example, to test `1-baseline` and `3-harmony-reflect-example`, modify the file to contain `JEST_MEMBRANE=1 3`
+
+test run information is given in the console, or as HTML in the [jest_html_reporters.html](./jest_html_reporters.html) file.
