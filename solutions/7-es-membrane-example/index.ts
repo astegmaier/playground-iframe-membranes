@@ -2,7 +2,7 @@
 
 // This is a function I (ansteg) wrote to adapt the es-membrane interface to our test app.
 export function createMembrane(wetTarget) {
-  const membrane = new Membrane();
+  const membrane = new Membrane({ showGraphName: true });
   const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
   const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
   const proxy = membrane.convertArgumentToProxy(wetHandler, dryHandler, wetTarget);
@@ -18,7 +18,7 @@ export function createMembrane(wetTarget) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // The code below was copied from the es-membrane repo                                                   //
 // See: https://github.com/ajvincent/es-membrane/blob/master/old-0.9/docs/dist/browser/es-membrane.js    //
-// TThe license below appears to allow us to use it (if we want to), as long as we include the copyright //
+// The license below appears to allow us to use it (if we want to), as long as we include the copyright //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ISC License (ISC)
