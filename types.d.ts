@@ -85,7 +85,17 @@ declare global {
     memory?: { usedJSHeapSize?: number; totalJSHeapSize?: number; jsHeapSizeLimit?: number };
   }
 
-  type CreateMembraneFunction = <T extends object>(target: T) => { membrane: T; revoke?: () => void };
+  type CreateMembraneFunction = <T extends object>(
+    target: T
+  ) => {
+    membrane: T;
+    revoke?: () => void;
+    /** This is an method that is implemented by es-membrane and exercised by its tests. */
+    getMembraneProxy?: GetValueOrProxyFn;
+    /** This is an method that is implemented by es-membrane and exercised by its tests. */
+    getMembraneValue?: GetValueOrProxyFn;
+  };
+  type GetValueOrProxyFn = (side: "dry" | "wet", value: any) => [found: boolean, foundValue: any];
   var membranes: Array<[string, CreateMembraneFunction]>;
 }
 

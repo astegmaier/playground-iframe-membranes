@@ -1,9 +1,62 @@
 // @ts-nocheck
+
+/** We want to adapt tests that were written for es-membrane to our more generic createMembrane function. */
+export class MockEsMembrane {
+  constructor(private _getMembraneValue?: GetValueOrProxyFn, private _getMembraneProxy?: GetValueOrProxyFn) {}
+  getMembraneValue: GetValueOrProxyFn = (side, value) => {
+    if (!this._getMembraneValue) throw new Error("getMembraneValue is not implemented");
+    return this._getMembraneValue(side, value);
+  };
+  getMembraneProxy: GetValueOrProxyFn = (side, value) => {
+    if (!this._getMembraneProxy) throw new Error("getMembraneProxy is not implemented");
+    return this._getMembraneProxy(side, value);
+  };
+}
+
+interface MembraneMockParts {
+  wet: {
+    doc: any; // wetDocument,
+    Node: any; // NodeWet,
+    Element: any; // ElementWet,
+  };
+  dry: {
+    doc: any; // dryDocument,
+    Node: any; // NodeDry,
+    Element: any; // ElementDry,
+  };
+  membrane: MockEsMembrane; //dryWetMB
+}
+
+/**
+ * This function adapts the MembraneMocks function from es-membrane so that tests can be adapted to other implementations of createMembrane.
+ */
+export function MembraneMocksAdapter(
+  createMembrane: CreateMembraneFunction,
+  includeDamp?: any,
+  logger?: any,
+  mockOptions?: any
+): MembraneMockParts {
+  const parts: MembraneMockParts = MembraneMocks(includeDamp, logger, mockOptions);
+
+  const { membrane, revoke, getMembraneValue, getMembraneProxy } = createMembrane(parts.wet);
+  parts.dry = { ...membrane };
+
+  // ansteg: We emulate the way that es-membrane does revoking - through dispatching an 'unload' event.
+  parts.wet.doc.dispatchEvent = (eventName: string) => {
+    if (eventName === "unload") {
+      revoke();
+    }
+  };
+
+  parts.membrane = new MockEsMembrane(getMembraneValue, getMembraneProxy);
+  return parts;
+}
+
 // This code was copied and adapted from the es-membrane project:
 // See https://github.com/ajvincent/es-membrane/blob/master/old-0.9/docs/dist/node/mocks.js
 
 var DAMP = Symbol("damp");
-export function MembraneMocks(includeDamp?, logger?, mockOptions?): any {
+function MembraneMocks(includeDamp?, logger?, mockOptions?): any {
   "use strict";
   includeDamp = Boolean(includeDamp);
   if (!mockOptions) mockOptions = {};

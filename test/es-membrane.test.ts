@@ -20,37 +20,17 @@
 // TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 // THIS SOFTWARE.
 
-import { MembraneMocks } from "./es-membrane-node-mocks";
+import { MembraneMocksAdapter as MembraneMocks, MockEsMembrane } from "./es-membrane-node-mocks";
 
 describe.each(membranes)("es-membrane tests --> %s membrane", (_, createMembrane: CreateMembraneFunction) => {
-  /** We want to adapt tests that were written for es-membrane to our more generic createMembrane function. */
-  class MockEsMembrane {
-    getMembraneValue() {
-      // TODO: implement this.
-      // We'll probably need to publicly expose the membrane's internals to do this. Is it worth it?
-    }
-    getMembraneProxy() {
-      // TODO: implement this.
-    }
-  }
   describe("basic concepts", () => {
     let wetDocument: any, dryDocument: any, membrane: MockEsMembrane;
 
     beforeEach(function () {
-      const parts = MembraneMocks();
+      let parts = MembraneMocks(createMembrane);
       wetDocument = parts.wet.doc;
-
-      // ansteg: This was originally "dryDocument = parts.dry.doc;"" We are modifying it to make it adaptable to our other implementations.
-      const createMembraneResult = createMembrane(wetDocument);
-      dryDocument = createMembraneResult.membrane;
-
-      // ansteg: We emulate the way that es-membrane does revoking - through dispatching an 'unload' event.
-      wetDocument.dispatchEvent = (eventName: string) => {
-        if (eventName === "unload") {
-          createMembraneResult.revoke();
-        }
-      };
-      membrane = new MockEsMembrane();
+      dryDocument = parts.dry.doc;
+      membrane = parts.membrane;
     });
 
     afterEach(function () {
@@ -75,213 +55,209 @@ describe.each(membranes)("es-membrane tests --> %s membrane", (_, createMembrane
       expect(dryDocument.firstChild).toBe(null);
     });
 
-    // TODO: In order to implement this, we'll need implement getMembraneValue and getMembraneProxy.
-    // This requires exposing the membranes internal maps, which might be more trouble than its worth.
-    // But maybe we could make it optional so membrane implementations that have these maps can opt-in to the test?
+    it("Setters should wrap and unwrap values correctly", function () {
+      var extraHolder: any;
+      const desc = {
+        get: function () {
+          return extraHolder;
+        },
+        set: function (val: any) {
+          extraHolder = val;
+          return val;
+        },
+        enumerable: true,
+        configurable: true,
+      };
 
-    // it("Setters should wrap and unwrap values correctly", function () {
-    //   var extraHolder;
-    //   const desc = {
-    //     get: function () {
-    //       return extraHolder;
-    //     },
-    //     set: function (val) {
-    //       extraHolder = val;
-    //       return val;
-    //     },
-    //     enumerable: true,
-    //     configurable: true,
-    //   };
+      Reflect.defineProperty(dryDocument, "extra", desc);
 
-    //   Reflect.defineProperty(dryDocument, "extra", desc);
+      var unwrappedExtra = {};
+      dryDocument.extra = unwrappedExtra;
+      expect(typeof extraHolder).toBe("object");
+      expect(extraHolder).not.toBe(null);
+      expect(extraHolder).not.toBe(unwrappedExtra);
 
-    //   var unwrappedExtra = {};
-    //   dryDocument.extra = unwrappedExtra;
-    //   expect(typeof extraHolder).toBe("object");
-    //   expect(extraHolder).not.toBe(null);
-    //   expect(extraHolder).not.toBe(unwrappedExtra);
+      /* In summary:
+       *
+       * dryDocument is a proxy, dryDocument.extra is an unwrapped object
+       * wetDocument is an unwrapped object, wetDocument.extra is a proxy
+       */
 
-    //   /* In summary:
-    //    *
-    //    * dryDocument is a proxy, dryDocument.extra is an unwrapped object
-    //    * wetDocument is an unwrapped object, wetDocument.extra is a proxy
-    //    */
+      let found, foundValue;
+      [found, foundValue] = membrane.getMembraneValue("wet", wetDocument);
+      expect(found).toBe(true);
+      expect(foundValue).toBe(wetDocument);
 
-    //   let found, foundValue;
-    //   [found, foundValue] = membrane.getMembraneValue("wet", wetDocument);
-    //   expect(found).toBe(true);
-    //   expect(foundValue).toBe(wetDocument);
+      [found, foundValue] = membrane.getMembraneValue("dry", dryDocument);
+      expect(found).toBe(true);
+      expect(foundValue).toBe(wetDocument);
 
-    //   [found, foundValue] = membrane.getMembraneValue("dry", dryDocument);
-    //   expect(found).toBe(true);
-    //   expect(foundValue).toBe(wetDocument);
+      [found, foundValue] = membrane.getMembraneProxy("wet", wetDocument);
+      expect(found).toBe(true);
+      expect(foundValue).toBe(wetDocument);
 
-    //   [found, foundValue] = membrane.getMembraneProxy("wet", wetDocument);
-    //   expect(found).toBe(true);
-    //   expect(foundValue).toBe(wetDocument);
+      [found, foundValue] = membrane.getMembraneProxy("dry", dryDocument);
+      expect(found).toBe(true);
+      expect(foundValue).toBe(dryDocument);
 
-    //   [found, foundValue] = membrane.getMembraneProxy("dry", dryDocument);
-    //   expect(found).toBe(true);
-    //   expect(foundValue).toBe(dryDocument);
+      [found, foundValue] = membrane.getMembraneValue("wet", wetDocument.extra);
+      expect(found).toBe(true);
+      expect(foundValue).toBe(unwrappedExtra);
 
-    //   [found, foundValue] = membrane.getMembraneValue("wet", wetDocument.extra);
-    //   expect(found).toBe(true);
-    //   expect(foundValue).toBe(unwrappedExtra);
+      [found, foundValue] = membrane.getMembraneValue("dry", dryDocument.extra);
+      expect(found).toBe(true);
+      expect(foundValue).toBe(unwrappedExtra);
 
-    //   [found, foundValue] = membrane.getMembraneValue("dry", dryDocument.extra);
-    //   expect(found).toBe(true);
-    //   expect(foundValue).toBe(unwrappedExtra);
+      [found, foundValue] = membrane.getMembraneProxy("wet", wetDocument.extra);
+      expect(found).toBe(true);
+      expect(foundValue).toBe(extraHolder);
 
-    //   [found, foundValue] = membrane.getMembraneProxy("wet", wetDocument.extra);
-    //   expect(found).toBe(true);
-    //   expect(foundValue).toBe(extraHolder);
+      [found, foundValue] = membrane.getMembraneProxy("dry", dryDocument.extra);
+      expect(found).toBe(true);
+      expect(foundValue).toBe(unwrappedExtra);
+    });
 
-    //   [found, foundValue] = membrane.getMembraneProxy("dry", dryDocument.extra);
-    //   expect(found).toBe(true);
-    //   expect(foundValue).toBe(unwrappedExtra);
-    // });
+    it("Looking up an object twice returns the same object", function () {
+      var root1 = dryDocument.rootElement;
+      var root2 = dryDocument.rootElement;
+      expect(root1 === root2).toBe(true);
+      expect(root1 !== wetDocument.rootElement).toBe(true);
+      expect(typeof root1).toBe("object");
+      expect(root1 !== null).toBe(true);
+    });
 
-    // it("Looking up an object twice returns the same object", function () {
-    //   var root1 = dryDocument.rootElement;
-    //   var root2 = dryDocument.rootElement;
-    //   expect(root1 === root2).toBe(true);
-    //   expect(root1 !== wetDocument.rootElement).toBe(true);
-    //   expect(typeof root1).toBe("object");
-    //   expect(root1 !== null).toBe(true);
-    // });
+    it("Looking up an cyclic object (a.b.c == a)", function () {
+      var root = dryDocument.rootElement;
+      var owner = root.ownerDocument;
+      expect(dryDocument === owner).toBe(true);
+    });
 
-    // it("Looking up an cyclic object (a.b.c == a)", function () {
-    //   var root = dryDocument.rootElement;
-    //   var owner = root.ownerDocument;
-    //   expect(dryDocument === owner).toBe(true);
-    // });
+    it("Looking up a method twice returns the same method", function () {
+      var method1 = dryDocument.insertBefore;
+      var method2 = dryDocument.insertBefore;
 
-    // it("Looking up a method twice returns the same method", function () {
-    //   var method1 = dryDocument.insertBefore;
-    //   var method2 = dryDocument.insertBefore;
+      expect(method1 === method2).toBe(true);
+      expect(method1 !== wetDocument.insertBefore).toBe(true);
+      expect(typeof method1).toBe("function");
+    });
 
-    //   expect(method1 === method2).toBe(true);
-    //   expect(method1 !== wetDocument.insertBefore).toBe(true);
-    //   expect(typeof method1).toBe("function");
-    // });
+    it("Looking up a non-configurable, non-writable property twice returns the same property, protected", function () {
+      const obj = { value: 6 };
+      Reflect.defineProperty(wetDocument, "extra", {
+        value: obj,
+        writable: false,
+        enumerable: true,
+        configurable: false,
+      });
 
-    // it("Looking up a non-configurable, non-writable property twice returns the same property, protected", function () {
-    //   const obj = { value: 6 };
-    //   Reflect.defineProperty(wetDocument, "extra", {
-    //     value: obj,
-    //     writable: false,
-    //     enumerable: true,
-    //     configurable: false,
-    //   });
+      var lookup1 = dryDocument.extra;
+      var lookup2 = dryDocument.extra;
 
-    //   var lookup1 = dryDocument.extra;
-    //   var lookup2 = dryDocument.extra;
+      expect(lookup1 === lookup2).toBe(true);
+      expect(lookup1 === obj).toBe(false);
 
-    //   expect(lookup1 === lookup2).toBe(true);
-    //   expect(lookup1 === obj).toBe(false);
+      expect(lookup1.value).toBe(6);
+    });
 
-    //   expect(lookup1.value).toBe(6);
-    // });
+    it("Looking up an accessor descriptor works", function () {
+      var desc = Object.getOwnPropertyDescriptor(dryDocument, "firstChild");
+      expect(desc.configurable).toBe(true);
+      expect(desc.enumerable).toBe(true);
+      expect(typeof desc.get).toBe("function");
+      expect("set" in desc).toBe(true);
+      expect(typeof desc.set).toBe("undefined");
 
-    // it("Looking up an accessor descriptor works", function () {
-    //   var desc = Object.getOwnPropertyDescriptor(dryDocument, "firstChild");
-    //   expect(desc.configurable).toBe(true);
-    //   expect(desc.enumerable).toBe(true);
-    //   expect(typeof desc.get).toBe("function");
-    //   expect("set" in desc).toBe(true);
-    //   expect(typeof desc.set).toBe("undefined");
+      desc = Object.getOwnPropertyDescriptor(dryDocument, "baseURL");
+      expect(desc.configurable).toBe(true);
+      expect(desc.enumerable).toBe(true);
+      expect(typeof desc.get).toBe("function");
+      expect(typeof desc.set).toBe("function");
 
-    //   desc = Object.getOwnPropertyDescriptor(dryDocument, "baseURL");
-    //   expect(desc.configurable).toBe(true);
-    //   expect(desc.enumerable).toBe(true);
-    //   expect(typeof desc.get).toBe("function");
-    //   expect(typeof desc.set).toBe("function");
+      dryDocument.baseURL = "https://www.ecmascript.org/";
+      expect(dryDocument.baseURL).toBe("https://www.ecmascript.org/");
+    });
 
-    //   dryDocument.baseURL = "https://www.ecmascript.org/";
-    //   expect(dryDocument.baseURL).toBe("https://www.ecmascript.org/");
-    // });
+    it("Executing a method returns a properly wrapped object", function () {
+      var rv;
+      expect(function () {
+        rv = dryDocument.insertBefore(dryDocument.rootElement, null);
+      }).not.toThrow();
+      expect(rv == dryDocument.firstChild).toBe(true);
+      expect(dryDocument.firstChild == dryDocument.rootElement).toBe(true);
+    });
 
-    // it("Executing a method returns a properly wrapped object", function () {
-    //   var rv;
-    //   expect(function () {
-    //     rv = dryDocument.insertBefore(dryDocument.rootElement, null);
-    //   }).not.toThrow();
-    //   expect(rv == dryDocument.firstChild).toBe(true);
-    //   expect(dryDocument.firstChild == dryDocument.rootElement).toBe(true);
-    // });
+    it("ElementDry and NodeDry respect Object.getPrototypeOf", function () {
+      let wetRoot, ElementWet, NodeWet;
+      let dryRoot, ElementDry, NodeDry;
 
-    // it("ElementDry and NodeDry respect Object.getPrototypeOf", function () {
-    //   let wetRoot, ElementWet, NodeWet;
-    //   let dryRoot, ElementDry, NodeDry;
+      let parts = MembraneMocks(createMembrane);
+      wetRoot = parts.wet.doc.rootElement;
+      ElementWet = parts.wet.Element;
+      NodeWet = parts.wet.Node;
 
-    //   let parts = MembraneMocks();
-    //   wetRoot = parts.wet.doc.rootElement;
-    //   ElementWet = parts.wet.Element;
-    //   NodeWet = parts.wet.Node;
+      let e, eP, proto, p2;
 
-    //   let e, eP, proto, p2;
+      e = new ElementWet({}, "test");
+      eP = Object.getPrototypeOf(e);
+      proto = ElementWet.prototype;
+      expect(eP === proto).toBe(true);
 
-    //   e = new ElementWet({}, "test");
-    //   eP = Object.getPrototypeOf(e);
-    //   proto = ElementWet.prototype;
-    //   expect(eP === proto).toBe(true);
+      proto = Object.getPrototypeOf(proto);
+      p2 = NodeWet.prototype;
+      expect(proto === p2).toBe(true);
 
-    //   proto = Object.getPrototypeOf(proto);
-    //   p2 = NodeWet.prototype;
-    //   expect(proto === p2).toBe(true);
+      dryRoot = parts.dry.doc.rootElement;
+      ElementDry = parts.dry.Element;
+      NodeDry = parts.dry.Node;
 
-    //   dryRoot = parts.dry.doc.rootElement;
-    //   ElementDry = parts.dry.Element;
-    //   NodeDry = parts.dry.Node;
+      e = new ElementDry({}, "test");
+      eP = Object.getPrototypeOf(e);
+      proto = ElementDry.prototype;
+      expect(eP === proto).toBe(true);
 
-    //   e = new ElementDry({}, "test");
-    //   eP = Object.getPrototypeOf(e);
-    //   proto = ElementDry.prototype;
-    //   expect(eP === proto).toBe(true);
+      proto = Object.getPrototypeOf(proto);
+      p2 = NodeDry.prototype;
+      expect(proto === p2).toBe(true);
 
-    //   proto = Object.getPrototypeOf(proto);
-    //   p2 = NodeDry.prototype;
-    //   expect(proto === p2).toBe(true);
+      expect(dryRoot instanceof ElementDry).toBe(true);
 
-    //   expect(dryRoot instanceof ElementDry).toBe(true);
+      expect(dryRoot instanceof NodeDry).toBe(true);
+    });
 
-    //   expect(dryRoot instanceof NodeDry).toBe(true);
-    // });
+    it("ElementDry as a constructor reflects assigned properties", function () {
+      let parts = MembraneMocks(createMembrane);
 
-    // it("ElementDry as a constructor reflects assigned properties", function () {
-    //   let parts = MembraneMocks();
+      let ElementDry = parts.dry.Element;
+      let ElementWet = parts.wet.Element;
+      let proto1 = ElementDry.prototype;
+      let owner: any = {
+        isFakeDoc: true,
+        root: null,
+      };
+      let k = new ElementDry(owner, "k");
+      expect(typeof k).not.toBe("undefined");
 
-    //   let ElementDry = parts.dry.Element;
-    //   let ElementWet = parts.wet.Element;
-    //   let proto1 = ElementDry.prototype;
-    //   let owner = {
-    //     isFakeDoc: true,
-    //     root: null,
-    //   };
-    //   let k = new ElementDry(owner, "k");
-    //   expect(typeof k).not.toBe("undefined");
+      let proto2 = Object.getPrototypeOf(k);
+      expect(proto1 === proto2).toBe(true);
+      let kOwner = k.ownerDocument;
+      expect(kOwner === owner).toBe(true);
+      owner.root = k;
 
-    //   let proto2 = Object.getPrototypeOf(k);
-    //   expect(proto1 === proto2).toBe(true);
-    //   let kOwner = k.ownerDocument;
-    //   expect(kOwner === owner).toBe(true);
-    //   owner.root = k;
+      /* This might be cheating, since on the "wet" object graph, there's no
+       * reason to look up owner.root.  On the other hand, if k is passed back to
+       * the "wet" object graph, being able to find the root property is allowed.
+       */
+      let dryWetMB = parts.membrane;
 
-    //   /* This might be cheating, since on the "wet" object graph, there's no
-    //    * reason to look up owner.root.  On the other hand, if k is passed back to
-    //    * the "wet" object graph, being able to find the root property is allowed.
-    //    */
-    //   let dryWetMB = parts.membrane;
+      let [found, wetK] = dryWetMB.getMembraneValue("wet", k);
+      expect(found).toBe(true);
 
-    //   let [found, wetK] = dryWetMB.getMembraneValue("wet", k);
-    //   expect(found).toBe(true);
-
-    //   expect(Object.getPrototypeOf(wetK) === ElementWet.prototype);
-    //   let wetKOwner = wetK.ownerDocument;
-    //   expect(wetKOwner !== owner).toBe(true);
-    //   let wetKRoot = wetKOwner.root;
-    //   expect(wetKRoot === wetK).toBe(true);
-    // });
+      expect(Object.getPrototypeOf(wetK) === ElementWet.prototype);
+      let wetKOwner = wetK.ownerDocument;
+      expect(wetKOwner !== owner).toBe(true);
+      let wetKRoot = wetKOwner.root;
+      expect(wetKRoot === wetK).toBe(true);
+    });
 
     // XXX ajvincent Be sure to retest this via frames, sandboxes.
     it("Executing a function via .apply() returns a properly wrapped object", function () {
@@ -512,7 +488,7 @@ describe.each(membranes)("es-membrane tests --> %s membrane", (_, createMembrane
     //   let wetRoot, ElementWet, NodeWet;
     //   let dryRoot, ElementDry, NodeDry;
 
-    //   let parts = MembraneMocks(false, logger);
+    //   let parts = MembraneMocks(createMembrane, false, logger);
     //   wetRoot = parts.wet.doc.rootElement;
     //   ElementWet = parts.wet.Element;
     //   NodeWet = parts.wet.Node;
@@ -532,8 +508,7 @@ describe.each(membranes)("es-membrane tests --> %s membrane", (_, createMembrane
     //   {
     //     traceMap.addMember = function (value, name) {
     //       if (!this.has(value)) this.set(value, name);
-    //       if (typeof value === "function" && !this.has(value.prototype))
-    //         this.set(value.prototype, name + ".prototype");
+    //       if (typeof value === "function" && !this.has(value.prototype)) this.set(value.prototype, name + ".prototype");
     //     };
 
     //     {
@@ -817,8 +792,10 @@ describe.each(membranes)("es-membrane tests --> %s membrane", (_, createMembrane
     });
   });
 
+  // ansteg: this test is not relevant to our single-graph implementations.
+
   // it("More than one object graph can be available", function () {
-  //   let parts = MembraneMocks(true);
+  //   let parts = MembraneMocks(createMembrane, true);
   //   let wetDocument = parts.wet.doc;
   //   let dryDocument = parts.dry.doc;
   //   let dampDocument = parts[DAMP].doc;

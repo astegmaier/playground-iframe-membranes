@@ -1,7 +1,7 @@
-//@ts-nocheck
+// @ts-nocheck
 
 // This is a function I (ansteg) wrote to adapt the es-membrane interface to our test app.
-export function createMembrane(wetTarget) {
+export function createMembrane(wetTarget: any) {
   const membrane = new Membrane({ showGraphName: true });
   const dryHandler = membrane.getHandlerByName("dry", { mustCreate: true });
   const wetHandler = membrane.getHandlerByName("wet", { mustCreate: true });
@@ -12,6 +12,8 @@ export function createMembrane(wetTarget) {
       dryHandler.revokeEverything();
       wetHandler.revokeEverything();
     },
+    getMembraneValue: membrane.getMembraneValue.bind(membrane),
+    getMembraneProxy: membrane.getMembraneProxy.bind(membrane),
   };
 }
 
