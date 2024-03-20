@@ -1,4 +1,5 @@
-export function createMembrane<T extends object>(target: T) {
+interface CreateMembraneOptions {}
+export function createMembrane<T extends object>(target: T, options?: CreateMembraneOptions) {
   const revokeFnsCache = new RevokeFnsCache<T>();
   const proxyIdentityCache = new ProxyIdentityCache<T>();
   const proxy = createRevocableProxy(target, revokeFnsCache, proxyIdentityCache);
@@ -15,68 +16,104 @@ function createRevocableProxy<T extends object>(
   revokeFnsCache: RevokeFnsCache<T>,
   proxyIdentityCache: ProxyIdentityCache<T>
 ): T {
-  function wrapper(target: any, direction: Direction): T {
+  function wrapper(target: any, direction: Direction): any {
     // return target if it's a primitive value
     if (isPrimitive(target)) return target;
     // Return the proxy if it already exists.
     if (proxyIdentityCache.get(target, direction)) return proxyIdentityCache.get(target, direction);
     const flippedDirection = proxyIdentityCache.flipDirection(direction);
-
-    // Create a proxy object that will forward all of the traps to a single function.
-    const proxyHandler = new Proxy(
-      {},
-      {
-        get(_, name: keyof ProxyHandler<T>) {
-          // Create a function that will wrap errors thrown by handlers in the correct direction.
-          function handleErrors(handler: (...args: any[]) => any) {
-            return (...args: any[]) => {
-              try {
-                return handler(...args);
-              } catch (e: any) {
-                throw wrapper(direction, e);
-              }
-            };
-          }
-          switch (name) {
-            case "get":
-              return handleErrors((_handlerTarget: unknown, name: string) =>
-                wrapper(Reflect.get(target, name), direction)
-              );
-            case "apply":
-              return handleErrors((_handlerTarget: unknown, thisArg: any, argArray: any[]) =>
-                wrapper(
-                  Reflect.apply(
-                    target,
-                    wrapper(thisArg, flippedDirection),
-                    argArray.map((arg) => wrapper(arg, flippedDirection))
-                  ),
-                  direction
-                )
-              );
-            default:
-              return handleErrors((_handlerTarget: unknown, ...args: any[]) => {
-                return wrapper(
-                  // Call signatures don't match, so we cast Reflect as Any, but name is a keyof ProxyHandler<T> so it will always be reflectable
-                  (Reflect as any)[name](target, ...args.map((arg) => wrapper(arg, flippedDirection))),
-                  direction
-                );
-              });
-          }
-        },
-      }
-    );
-    const { proxy, revoke } = Proxy.revocable(target, proxyHandler);
+    function handleErrors(handler: (...args: any[]) => any) {
+      return (...args: any[]) => {
+        try {
+          return handler(...args);
+        } catch (e: any) {
+          throw wrapper(direction, e);
+        }
+      };
+    }
+    const { proxy, revoke } = Proxy.revocable(target, {
+      apply(target, thisArg, argArray) {
+        return handleErrors(() =>
+          wrapper(
+            Reflect.apply(
+              target,
+              wrapper(thisArg, flippedDirection),
+              argArray.map((arg) => wrapper(arg, flippedDirection))
+            ),
+            direction
+          )
+        )();
+      },
+      construct(target, argArray, newTarget) {
+        return handleErrors(() =>
+          wrapper(
+            Reflect.construct(
+              target,
+              argArray.map((arg) => wrapper(arg, flippedDirection)),
+              wrapper(newTarget, flippedDirection)
+            ),
+            direction
+          )
+        )();
+      },
+      defineProperty(target, property, attributes) {
+        return handleErrors(() => Reflect.defineProperty(target, property, wrapper(attributes, flippedDirection)))();
+      },
+      deleteProperty(target, p) {
+        return handleErrors(() => Reflect.deleteProperty(target, p))();
+      },
+      get(target, p, receiver) {
+        if (p === "membraneGraphName") return direction;
+        const propertyDescriptor = Reflect.getOwnPropertyDescriptor(target, p);
+        if (propertyDescriptor && !propertyDescriptor.writable && !propertyDescriptor.configurable) {
+          // Proxy must return the original value for non-writable, non-configurable properties
+          // https://262.ecma-international.org/8.0/#sec-proxy-object-internal-methods-and-internal-slots-get-p-receiver
+          console.warn(
+            "Warning: Membrane isolation broken. Returning original value for non-writable, non-configurable property ",
+            p
+          );
+          return Reflect.get(target, p, receiver);
+        }
+        return handleErrors(() => wrapper(Reflect.get(target, p, wrapper(receiver, flippedDirection)), direction))();
+      },
+      getOwnPropertyDescriptor(target, p) {
+        return handleErrors(() => wrapper(Reflect.getOwnPropertyDescriptor(target, p), direction))();
+      },
+      getPrototypeOf(target) {
+        return handleErrors(() => wrapper(Reflect.getPrototypeOf(target), direction))();
+      },
+      has(target, p) {
+        return handleErrors(() => Reflect.has(target, p))();
+      },
+      isExtensible(target) {
+        return handleErrors(() => Reflect.isExtensible(target))();
+      },
+      ownKeys(target) {
+        return handleErrors(() => Reflect.ownKeys(target))();
+      },
+      preventExtensions(target) {
+        return handleErrors(() => Reflect.preventExtensions(target))();
+      },
+      set(target, p, newValue, receiver) {
+        return handleErrors(() =>
+          Reflect.set(target, p, wrapper(newValue, flippedDirection), wrapper(receiver, flippedDirection))
+        )();
+      },
+      setPrototypeOf(target, v) {
+        return handleErrors(() => Reflect.setPrototypeOf(target, wrapper(v, flippedDirection)))();
+      },
+    });
     proxyIdentityCache.add(target, proxy, direction);
     revokeFnsCache.add(proxy, revoke);
+    // Reflect.defineProperty(proxy, "membraneGraphName", { value: direction, writable: false, enumerable: false });
     return proxy;
   }
 
-  return wrapper(target, "wet");
+  return wrapper(target, "dry");
 }
 
 function isPrimitive(value: any): boolean {
-  // TODO: are there any edge cases to consider here?
-  return (typeof value !== "object" && typeof value !== "function") || value === null;
+  return Object(value) !== value;
 }
 
 /**

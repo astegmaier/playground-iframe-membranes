@@ -69,7 +69,7 @@ describe.each(membranes)("es-membrane tests --> %s membrane", (_, createMembrane
         configurable: true,
       };
 
-      Reflect.defineProperty(dryDocument, "extra", desc);
+      Reflect.defineProperty(wetDocument, "extra", desc);
 
       var unwrappedExtra = {};
       dryDocument.extra = unwrappedExtra;
@@ -154,7 +154,10 @@ describe.each(membranes)("es-membrane tests --> %s membrane", (_, createMembrane
       var lookup2 = dryDocument.extra;
 
       expect(lookup1 === lookup2).toBe(true);
-      expect(lookup1 === obj).toBe(false);
+      // expect(lookup1 === obj).toBe(false);
+      // According to the ECMAScript spec, the value of a non-configurable, non-writable property passed through a proxy must be the original
+      // https://262.ecma-international.org/8.0/#sec-proxy-object-internal-methods-and-internal-slots-get-p-receiver
+      expect(lookup1 === obj).toBe(true);
 
       expect(lookup1.value).toBe(6);
     });
@@ -425,7 +428,7 @@ describe.each(membranes)("es-membrane tests --> %s membrane", (_, createMembrane
         enumerable: true,
         configurable: true,
       });
-      expect(dryDocument.location === location).toBe(true);
+      expect(dryDocument.location).toBe(location);
       expect(typeof dryDocument.location.membraneGraphName).toBe("undefined");
       expect(wetDocument.location !== location).toBe(true);
       expect(wetDocument.location.name === "location").toBe(true);

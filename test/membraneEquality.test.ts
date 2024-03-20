@@ -46,5 +46,28 @@ describe.each(membranes)("Membrane Equality -->  %s", (_, createMembrane: Create
       expect(dryMembrane.baz).toBe(originalBaz);
       expect(wetObject.baz).not.toBe(originalBaz);
     });
+
+    test("Setters should wrap and unwrap values correctly", () => {
+      var extraHolder: any;
+      const desc = {
+        get: function () {
+          return extraHolder;
+        },
+        set: function (val: any) {
+          extraHolder = val;
+          return val;
+        },
+        enumerable: true,
+        configurable: true,
+      };
+
+      Object.defineProperty(wetObject, "extra", desc);
+
+      var unwrappedExtra = { foo: "bar" };
+      (dryMembrane as any).extra = unwrappedExtra;
+      expect(typeof extraHolder).toBe("object");
+      expect(extraHolder).not.toBe(null);
+      expect(extraHolder === unwrappedExtra).toBe(false);
+    });
   });
 });
