@@ -27,7 +27,7 @@ function createRevocableProxy<T extends object>(
         try {
           return handler(...args);
         } catch (e: any) {
-          throw wrapper(direction, e);
+          throw wrapper(e, direction);
         }
       };
     }
