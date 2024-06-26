@@ -62,6 +62,7 @@ function createRevocableProxy<T extends object>(
         return handleErrors(() => Reflect.deleteProperty(target, p))();
       },
       get(target, p, receiver) {
+        if (p === "membraneGraphName") return direction; // TODO: do we need this? shouldn't it at least be a symbol, so we don't cause conflicts?
         const propertyDescriptor = Reflect.getOwnPropertyDescriptor(target, p);
         if (propertyDescriptor && propertyDescriptor.writable === false && propertyDescriptor.configurable === false) {
           // Proxy must return the original value for non-writable, non-configurable properties
