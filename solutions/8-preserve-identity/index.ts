@@ -63,16 +63,20 @@ function createRevocableProxy<T extends object>(
         return handleErrors(() => Reflect.deleteProperty(target, p))();
       },
       get(target, p, receiver) {
-        if (p === "membraneGraphName") return direction;
+        if (p === "membraneGraphName") return direction; // TODO: do we need this? shouldn't it at least be a symbol, so we don't cause conflicts?
         const propertyDescriptor = Reflect.getOwnPropertyDescriptor(target, p);
-        if (propertyDescriptor && !propertyDescriptor.writable && !propertyDescriptor.configurable) {
+        if (propertyDescriptor && propertyDescriptor.writable === false && propertyDescriptor.configurable === false) {
           // Proxy must return the original value for non-writable, non-configurable properties
           // https://262.ecma-international.org/8.0/#sec-proxy-object-internal-methods-and-internal-slots-get-p-receiver
           console.warn(
             "Warning: Membrane isolation broken. Returning original value for non-writable, non-configurable property ",
             p
           );
-          return Reflect.get(target, p, receiver);
+          // This used to be Reflect.get(target, p, receiver), but that caused errors in some cases.
+          // For example, in the browser, calling `Reflect.get(unproxiedWindowObject, "window", windowProxy)`
+          // would produce an error: `TypeError: Illegal invocation at Reflect.get`
+          // I think omitting the receiver is the correct behavior, since we're breaking the proxy here anyways.
+          return Reflect.get(target, p);
         }
         return handleErrors(() => wrapper(Reflect.get(target, p, wrapper(receiver, flippedDirection)), direction))();
       },
@@ -113,7 +117,7 @@ function createRevocableProxy<T extends object>(
 }
 
 function isPrimitive(value: any): boolean {
-  return Object(value) !== value;
+  return Object(value) !== value; // TODO: will this work if "Object" comes from the main window realm? Another way to do this would be to check for "null" and "typeof" !== "object" | "function". It's not clear which one is better.
 }
 
 /**

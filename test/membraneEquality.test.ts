@@ -17,6 +17,9 @@ describe.each(membranes)("Membrane Equality -->  %s", (_, createMembrane: Create
       set private(value) {
         this._private = value;
       },
+      get recursiveWetObject() {
+        return this;
+      },
     };
     const { membrane: dryMembrane } = createMembrane(wetObject);
     test("primitives are unchanged", () => {
@@ -68,6 +71,9 @@ describe.each(membranes)("Membrane Equality -->  %s", (_, createMembrane: Create
       expect(typeof extraHolder).toBe("object");
       expect(extraHolder).not.toBe(null);
       expect(extraHolder === unwrappedExtra).toBe(false);
+    });
+    test("Objects with circular references preserve identity", () => {
+      expect(dryMembrane).toBe(dryMembrane.recursiveWetObject);
     });
   });
 });
