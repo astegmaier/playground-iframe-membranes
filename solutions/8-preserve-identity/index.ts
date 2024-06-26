@@ -81,7 +81,18 @@ function createRevocableProxy<T extends object>(
         return handleErrors(() => wrapper(Reflect.get(target, p, wrapper(receiver, flippedDirection)), direction))();
       },
       getOwnPropertyDescriptor(target, p) {
-        return handleErrors(() => wrapper(Reflect.getOwnPropertyDescriptor(target, p), direction))();
+        const descriptor = Reflect.getOwnPropertyDescriptor(target, p);
+        // If the property on the (non-proxied) target is not configurable, we _must_ return the real property descriptor, or we'll throw the error:
+        // "TypeError: 'getOwnPropertyDescriptor' on proxy: trap returned descriptor for property 'foo' that is incompatible with the existing property in the proxy target"
+        if (descriptor && !descriptor.configurable) {
+          // TODO: I think this might break the membrane isolation, especially if the 'value', 'get', or 'set' properties of the descriptor are meaty things. We should try to figure out how to address this.
+          console.warn(
+            "Warning: Membrane isolation because getOwnPropertyDescriptor() was called on a non-configurable property",
+            p
+          );
+          return descriptor;
+        }
+        return handleErrors(() => wrapper(descriptor, direction))();
       },
       getPrototypeOf(target) {
         return handleErrors(() => wrapper(Reflect.getPrototypeOf(target), direction))();
