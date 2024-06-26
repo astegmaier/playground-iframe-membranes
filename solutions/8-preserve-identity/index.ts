@@ -67,6 +67,7 @@ function createRevocableProxy<T extends object>(
         if (propertyDescriptor && propertyDescriptor.writable === false && propertyDescriptor.configurable === false) {
           // Proxy must return the original value for non-writable, non-configurable properties
           // https://262.ecma-international.org/8.0/#sec-proxy-object-internal-methods-and-internal-slots-get-p-receiver
+          // eslint-disable-next-line no-console -- TODO: hook up real logging
           console.warn(
             "Warning: Membrane isolation broken. Returning original value for non-writable, non-configurable property ",
             p
@@ -85,6 +86,7 @@ function createRevocableProxy<T extends object>(
         // "TypeError: 'getOwnPropertyDescriptor' on proxy: trap returned descriptor for property 'foo' that is incompatible with the existing property in the proxy target"
         if (descriptor && !descriptor.configurable) {
           // TODO: I think this might break the membrane isolation, especially if the 'value', 'get', or 'set' properties of the descriptor are meaty things. We should try to figure out how to address this.
+          // eslint-disable-next-line no-console -- TODO: hook up real logging
           console.warn(
             "Warning: Membrane isolation because getOwnPropertyDescriptor() was called on a non-configurable property",
             p
@@ -162,11 +164,11 @@ class ProxyIdentityCache<T extends object> {
     this.wetMap = new WeakMap();
   }
   get(target: T, direction: Direction) {
-    return this.getMapForDirection(direction)?.get(target)?.deref();
+    return this.getMapForDirection(direction).get(target)?.deref();
   }
   add(target: T, wrapper: T, direction: Direction) {
-    this.getMapForDirection(direction)?.set(target, new WeakRef<T>(wrapper));
-    this.getMapForDirection(this.flipDirection(direction))?.set(wrapper, new WeakRef(target));
+    this.getMapForDirection(direction).set(target, new WeakRef<T>(wrapper));
+    this.getMapForDirection(this.flipDirection(direction)).set(wrapper, new WeakRef(target));
   }
   flipDirection(direction: Direction): Direction {
     return direction === "dry" ? "wet" : "dry";
