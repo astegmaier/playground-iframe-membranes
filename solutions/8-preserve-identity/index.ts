@@ -1,5 +1,4 @@
-interface CreateMembraneOptions {}
-export function createMembrane<T extends object>(target: T, options?: CreateMembraneOptions) {
+export function createMembrane<T extends object>(target: T) {
   const revokeFnsCache = new RevokeFnsCache<T>();
   const proxyIdentityCache = new ProxyIdentityCache<T>();
   const proxy = createRevocableProxy(target, revokeFnsCache, proxyIdentityCache);
@@ -63,7 +62,6 @@ function createRevocableProxy<T extends object>(
         return handleErrors(() => Reflect.deleteProperty(target, p))();
       },
       get(target, p, receiver) {
-        if (p === "membraneGraphName") return direction; // TODO: do we need this? shouldn't it at least be a symbol, so we don't cause conflicts?
         const propertyDescriptor = Reflect.getOwnPropertyDescriptor(target, p);
         if (propertyDescriptor && propertyDescriptor.writable === false && propertyDescriptor.configurable === false) {
           // Proxy must return the original value for non-writable, non-configurable properties
@@ -120,7 +118,6 @@ function createRevocableProxy<T extends object>(
     });
     proxyIdentityCache.add(target, proxy, direction);
     revokeFnsCache.add(proxy, revoke);
-    // Reflect.defineProperty(proxy, "membraneGraphName", { value: direction, writable: false, enumerable: false });
     return proxy;
   }
 
