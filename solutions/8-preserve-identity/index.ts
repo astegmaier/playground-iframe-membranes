@@ -1,6 +1,16 @@
-export function createMembrane<T extends object>(target: T) {
-  const revokeFnsCache = new RevokeFnsCache<T>();
-  const proxyIdentityCache = new ProxyIdentityCache<T>();
+interface CreateMembraneOptions {
+  /** For testing purposes only - allows tests to look up mappings between real objects and their associated proxies. */
+  proxyIdentityCache?: ProxyIdentityCache;
+}
+
+interface CreateMembraneResult<T extends object> {
+  membrane: T;
+  revoke: () => void;
+}
+
+export function createMembrane<T extends object>(target: T, options?: CreateMembraneOptions): CreateMembraneResult<T> {
+  const revokeFnsCache = new RevokeFnsCache();
+  const proxyIdentityCache = options?.proxyIdentityCache ?? new ProxyIdentityCache();
   const proxy = createRevocableProxy(target, revokeFnsCache, proxyIdentityCache);
   return {
     membrane: proxy,
@@ -10,10 +20,12 @@ export function createMembrane<T extends object>(target: T) {
   };
 }
 
+export const IS_PROXY_SYMBOL = Symbol("IS_PROXY_SYMBOL");
+
 function createRevocableProxy<T extends object>(
   target: T,
-  revokeFnsCache: RevokeFnsCache<T>,
-  proxyIdentityCache: ProxyIdentityCache<T>
+  revokeFnsCache: RevokeFnsCache,
+  proxyIdentityCache: ProxyIdentityCache
 ): T {
   function wrapper(target: any, direction: Direction): any {
     // return target if it's a primitive value
@@ -62,7 +74,10 @@ function createRevocableProxy<T extends object>(
         return handleErrors(() => Reflect.deleteProperty(target, p))();
       },
       get(target, p, receiver) {
-        if (p === "membraneGraphName") return direction; // TODO: do we need this? shouldn't it at least be a symbol, so we don't cause conflicts?
+        // These overrides are only necessary to enable our createMembrane function to work correctly with es-membrane tests.
+        if (p === IS_PROXY_SYMBOL) return true;
+        if (p === "membraneGraphName") return direction;
+
         const propertyDescriptor = Reflect.getOwnPropertyDescriptor(target, p);
         if (propertyDescriptor && propertyDescriptor.writable === false && propertyDescriptor.configurable === false) {
           // Proxy must return the original value for non-writable, non-configurable properties
@@ -88,7 +103,7 @@ function createRevocableProxy<T extends object>(
           // TODO: I think this might break the membrane isolation, especially if the 'value', 'get', or 'set' properties of the descriptor are meaty things. We should try to figure out how to address this.
           // eslint-disable-next-line no-console -- TODO: hook up real logging
           console.warn(
-            "Warning: Membrane isolation because getOwnPropertyDescriptor() was called on a non-configurable property",
+            "Warning: Membrane isolation broken because getOwnPropertyDescriptor() was called on a non-configurable property",
             p
           );
           return descriptor;
@@ -141,10 +156,10 @@ function isPrimitive(value: any): boolean {
  * This solution uses a WeakMap to link the lifetime of the proxy to the lifetime of the revoke function.
  * WeakMaps are not iterable, though, so we also have to keep a separate array of WeakRefs to the revoke functions.
  */
-class RevokeFnsCache<T extends object> {
-  private proxyToRevokeFn = new WeakMap<T, () => void>();
+class RevokeFnsCache {
+  private proxyToRevokeFn = new WeakMap<object, () => void>();
   private revokeFnWeakRefs: WeakRef<() => void | undefined>[] = [];
-  add(proxy: T, revokeFn: () => void) {
+  add(proxy: object, revokeFn: () => void) {
     this.proxyToRevokeFn.set(proxy, revokeFn);
     this.revokeFnWeakRefs.push(new WeakRef(revokeFn));
   }
@@ -154,26 +169,26 @@ class RevokeFnsCache<T extends object> {
 }
 
 // Direction object is moving from
-type Direction = "dry" | "wet";
+export type Direction = "dry" | "wet";
 
-class ProxyIdentityCache<T extends object> {
-  dryMap: WeakMap<T, WeakRef<T>>;
-  wetMap: WeakMap<T, WeakRef<T>>;
+export class ProxyIdentityCache {
+  dryMap: WeakMap<object, WeakRef<object>>;
+  wetMap: WeakMap<object, WeakRef<object>>;
   constructor() {
     this.dryMap = new WeakMap();
     this.wetMap = new WeakMap();
   }
-  get(target: T, direction: Direction) {
-    return this.getMapForDirection(direction).get(target)?.deref();
+  get<T extends object>(target: T, direction: Direction): T | undefined {
+    return this.getMapForDirection(direction).get(target)?.deref() as T | undefined;
   }
-  add(target: T, wrapper: T, direction: Direction) {
+  add<T extends object>(target: T, wrapper: T, direction: Direction) {
     this.getMapForDirection(direction).set(target, new WeakRef<T>(wrapper));
     this.getMapForDirection(this.flipDirection(direction)).set(wrapper, new WeakRef(target));
   }
   flipDirection(direction: Direction): Direction {
     return direction === "dry" ? "wet" : "dry";
   }
-  private getMapForDirection(direction: Direction) {
+  getMapForDirection(direction: Direction) {
     return direction === "dry" ? this.dryMap : this.wetMap;
   }
 }

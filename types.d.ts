@@ -90,9 +90,45 @@ declare global {
   ) => {
     membrane: T;
     revoke?: () => void;
-    /** This is an method that is implemented by es-membrane and exercised by its tests. */
+    /**
+     * [ansteg note: this is only necessary to implement because it is exposed by es-membrane and used by its tests]
+     * Get the proxy associated with a field name and another known value.
+     *
+     * @param field {Symbol|String}  The field to look for.
+     * @param value {Variant} The key for the ProxyMapping map.
+     *
+     * @returns [
+     *    {Boolean} True if the value was found.
+     *    {Proxy}   The proxy for that field.
+     * ] if field is not the value's origin field
+     *
+     * @returns [
+     *    {Boolean} True if the value was found.
+     *    {Variant} The actual value
+     * ] if field is the value's origin field
+     *
+     * @returns [
+     *    {Boolean} False if the value was not found.
+     *    {Object}  NOT_YET_DETERMINED
+     * ]
+     */
     getMembraneProxy?: GetValueOrProxyFn;
-    /** This is an method that is implemented by es-membrane and exercised by its tests. */
+    /**
+     * [ansteg note: this is only necessary to implement because it is exposed by es-membrane and used by its tests]
+     * Get the value associated with a field name and another known value.
+     *
+     * @param field {Symbol|String}  The field to look for.
+     * @param value {Variant} The key for the ProxyMapping map.
+     *
+     * @returns [
+     *    {Boolean} True if the value was found.
+     *    {Variant} The value for that field.
+     * ]
+     *
+     * @note This method is not used internally in the membrane, but only by debug
+     * code to assert that we have the right values stored.  Therefore you really
+     * shouldn't use it in Production.
+     */
     getMembraneValue?: GetValueOrProxyFn;
   };
   type GetValueOrProxyFn = (side: "dry" | "wet", value: any) => [found: boolean, foundValue: any];
