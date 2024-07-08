@@ -14,7 +14,7 @@ describe.each(membranes)("Membrane Equality -->  %s", (_, createMembrane: Create
       expect(retrievedDescriptor).toEqual(initialDescriptor);
     });
 
-    it.only("descriptors with a getter and 'configurable: false'", () => {
+    it("descriptors with a getter and 'configurable: false'", () => {
       const wetObj: { foo?: number } = {};
       Object.defineProperty(wetObj, "foo", {
         get() {
@@ -31,7 +31,7 @@ describe.each(membranes)("Membrane Equality -->  %s", (_, createMembrane: Create
       expect(descriptor.enumerable).toBe(false);
     });
 
-    it.only("descriptors with a getter and setter and 'configurable: false'", () => {
+    it("descriptors with a getter and setter and 'configurable: false'", () => {
       const wetObj: { foo?: number } = {};
       Object.defineProperty(wetObj, "foo", {
         get() {
