@@ -220,6 +220,9 @@
           <option value="2-leak-iframe">Scenario 2 - Leaking An Iframe Directly</option>
           <option value="3-object-equality">Scenario 3 - Preserving Object Equality Across the Membrane</option>
           <option value="4-accessing-content-window">Scenario 4 - Accessing contentWindow.window recursively.</option>
+          <option value="5-gc-proxies-before-revoke">
+            Scenario 5 - Ensuring that proxies (and targets) can be garbage collected _before_ the membrane is revoked.
+          </option>
         </select>
         <label for="scenario">Select a scenario</label>
       </div>

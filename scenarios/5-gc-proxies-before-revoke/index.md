@@ -1,0 +1,3 @@
+This scenario tests whether proxies and the associated "real" target objects can get garbage collected on both sides of the membrane _before_ the membrane is revoked.
+
+The problem we want to make sure that a membrane implmentation solves is rooted in the fact that a revokable proxy's `revoke` function retains a hard reference to the proxy. (see [chromium issue](https://issues.chromium.org/issues/42201499)). If the membrane is not careful about this, the fact that it needs to hold onto `revoke` functions for the lifetime of the membrane means that it could unintentionally leak memory until it is revoked (i.e. objects that would otherwise get gc'd are not).
