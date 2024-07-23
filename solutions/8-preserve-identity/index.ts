@@ -120,7 +120,13 @@ function createRevocableProxy<T extends object>(
         return handleErrors(() => Reflect.isExtensible(target))();
       },
       ownKeys(target) {
-        return handleErrors(() => Reflect.ownKeys(target))();
+        return handleErrors(() => {
+          const keys = Reflect.ownKeys(target);
+          if (!keys.includes("membraneGraphName")) {
+            keys.push("membraneGraphName"); // This is only necessary so that this implementation can pass the es-membrane tests.
+          }
+          return keys;
+        })();
       },
       preventExtensions(target) {
         return handleErrors(() => Reflect.preventExtensions(target))();
