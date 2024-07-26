@@ -1,5 +1,7 @@
+let instanceNumber = 0;
+
 export function runScenario(iframe) {
-  const iframeObject = iframe.contentWindow.getIframeObject();
+  const iframeObject = iframe.contentWindow.getIframeObject(instanceNumber++);
   console.log(
     `the wet side of the membrane retrieved iframeObject ${iframeObject.instanceNumber} but did not otherwise retain it.`
   );
