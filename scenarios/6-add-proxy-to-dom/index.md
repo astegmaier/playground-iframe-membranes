@@ -1,0 +1,1 @@
+This scenario tests whether proxies to DOM elements can be added to the DOM.
